@@ -8,7 +8,7 @@
 SCRIPT_PATH=/foundrycron/reboot_certbot.sh
 CRON_PATH=/var/spool/cron/root
 
-yum install python-certbot-nginx -y
+dnf install python-certbot-nginx -y
 mkdir /var/log/foundrycron /foundrycron
 
 # create certbot renewal script

@@ -9,7 +9,7 @@ else
 fi
 
 # install nginx
-sudo amazon-linux-extras install -y nginx1
+sudo dnf install nginx -y
 
 # configure nginx
 sudo mkdir /var/log/nginx/foundry

@@ -23,19 +23,19 @@ fi
 
 # check if root
 if [ "$EUID" -ne 0 ]
-then 
+then
     echo -e "${RED}ERROR: Please run as root. (sudo su)${NC}"
     echo -e "${YELLOW}Update unsuccessful. Quitting...${NC}"
     exit
 fi
 
-# check node v14+
+# check node v18+
 node_version=`echo $(node -v) | cut -d '.' -f1 | cut -d 'v' -f2`
-if [ $node_version -ge 14 ]
+if [ $node_version -ge 18 ]
 then
-    echo -e "${GREEN}Node.js confirmed running v14 or greater${NC}"
+    echo -e "${GREEN}Node.js confirmed running v18 or greater${NC}"
 else
-    echo -e "${RED}ERROR: Foundry VTT 0.8 requires Node.js version 14 or greater."
+    echo -e "${RED}ERROR: Foundry VTT 11 requires Node.js version 18 or greater (this script uses version 18)."
     echo -e "${YELLOW}Please visit \e[4mhttps://github.com/cat-box/aws-foundry-ssl/wiki/Patches${YELLOW} to update Node.js first.${NC}"
     echo -e "${YELLOW}Update unsuccessful. Quitting...${NC}"
     exit
@@ -63,7 +63,7 @@ check_deployment() {
         # cannot detect deployment method
         echo "neither"
     fi
-} 
+}
 
 # suspend foundry
 case "$(check_deployment)" in
@@ -115,7 +115,7 @@ then
     fileid=`echo ${foundry_download_link} | cut -d '/' -f6`
     sudo wget --quiet --save-cookies cookies.txt --keep-session-cookies --no-check-certificate "https://docs.google.com/uc?export=download&id=${fileid}" -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p' > confirm.txt
     sudo wget --load-cookies cookies.txt -O foundry.zip 'https://docs.google.com/uc?export=download&id='${fileid}'&confirm='$(<confirm.txt) && rm -rf cookies.txt confirm.txt
-else 
+else
     sudo wget -O foundry.zip "${foundry_download_link}"
 fi
 unzip -qu foundry.zip -d /foundry

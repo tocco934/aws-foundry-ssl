@@ -2,10 +2,10 @@
 source /foundryssl/variables.sh
 
 # install epel
-sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+sudo dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
 # install certbot
-sudo yum install -y certbot python2-certbot-nginx
+sudo dnf install -y certbot python2-certbot-nginx
 
 # install certificates
 sudo certbot --agree-tos -n --nginx -d ${subdomain}.${fqdn} -m ${email} --no-eff-email
@@ -16,7 +16,7 @@ if [[ ${webserver_bool} == 'True' ]]; then
 fi
 
 # install nginx certbot plugin
-sudo yum install -y python-certbot-nginx
+sudo dnf install -y python-certbot-nginx
 
 # configure to autorenew certs
 crontab -l | { cat; echo "@reboot       /foundrycron/reboot_certbot.sh"; } | crontab -
