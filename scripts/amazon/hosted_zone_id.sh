@@ -1,11 +1,19 @@
 #!/bin/bash
 
-sudo dnf install -y jq
+[ -z "$fqdn" ] && echo "WARNING: \$fqdn is empty"
+
 
 zone_id=`aws route53 list-hosted-zones | jq ".HostedZones[] | select(.Name==\"${fqdn}.\") | .Id" | cut -d / -f3 | cut -d '"' -f1`
 
-echo "zone_id=${zone_id}" >> /foundryssl/variables.sh
+echo "DNS Zone ID: ${zone_id}"
 
-sudo cp /aws-foundry-ssl/scripts/amazon/dynamic_dns.sh /foundryssl/dynamic_dns.sh
-crontab -l | { cat; echo "@reboot    /foundryssl/dynamic_dns.sh > /dev/null"; } | crontab -
-crontab -l | { cat; echo "*/10 * * * *    /foundryssl/dynamic_dns.sh > /dev/null"; } | crontab -
+# If zone_id is set, update it. Otherwise, append it
+grep -q "^zone_id=" /foundryssl/variables.sh && sed "s/^zone_id=.*/zone_id=${zone_id}/" -i /foundryssl/variables.sh || sed "$ a\zone_id=${zone_id}" -i /foundryssl/variables.sh
+
+sudo cp /aws-foundry-ssl/files/amazon/dynamic_dns.sh /foundrycron/dynamic_dns.sh
+sudo cp /aws-foundry-ssl/files/amazon/dynamic_dns.service /etc/systemd/system/
+sudo cp /aws-foundry-ssl/files/amazon/dynamic_dns.timer /etc/systemd/system/
+
+# Start the timer and set it up for restart support too
+sudo systemctl daemon-reload
+sudo systemctl enable --now dynamic_dns.timer

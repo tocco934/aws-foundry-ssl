@@ -1,34 +1,30 @@
 #!/bin/bash
 source /foundryssl/variables.sh
 
-# install epel
-sudo dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+# Install augeas
+sudo dnf install -y augeas-libs
 
-# install certbot
-sudo dnf install -y certbot python2-certbot-nginx
+# Setup and install python env for certbot and then certbot
+sudo python3 -m venv /opt/certbot/
+sudo /opt/certbot/bin/pip install --upgrade pip
+sudo /opt/certbot/bin/pip install certbot certbot-nginx
+sudo ln -s /opt/certbot/bin/certbot /usr/bin/certbot
 
-# install certificates
-sudo certbot --agree-tos -n --nginx -d ${subdomain}.${fqdn} -m ${email} --no-eff-email
+# Set up autorenew SSL certs
+sudo cp /aws-foundry-ssl/files/certbot/certbot_renew.sh /foundrycron/certbot_renew.sh
+sudo cp /aws-foundry-ssl/files/certbot/certbot_renew.service /etc/systemd/system/
+sudo cp /aws-foundry-ssl/files/certbot/certbot_renew.timer /etc/systemd/system/
 
-# install certificates for optional webserver
-if [[ ${webserver_bool} == 'True' ]]; then
-    sudo certbot --agree-tos -n --nginx -d ${fqdn},www.${fqdn} -m ${email} --no-eff-email
-fi
+sudo systemctl daemon-reload
+sudo systemctl enable --now certbot_renew.timer
 
-# install nginx certbot plugin
-sudo dnf install -y python-certbot-nginx
+sudo touch /var/log/foundrycron/certbot_renew.log
 
-# configure to autorenew certs
-crontab -l | { cat; echo "@reboot       /foundrycron/reboot_certbot.sh"; } | crontab -
-crontab -l | { cat; echo "0 12 * * *    certbot renew --nginx --no-self-upgrade --no-random-sleep-on-renew --post-hook \"systemctl restart nginx\" > /var/log/foundrycron/certbot_renew_daily.log 2>&1"; } | crontab -
-echo -e "PATH=/usr/bin:/bin:/usr/sbin\n\n$(cat /var/spool/cron/root)" > /var/spool/cron/root
-
-sudo cp /aws-foundry-ssl/files/certbot/reboot_certbot.sh /foundrycron/reboot_certbot.sh
-
+# Not sure what this does?
 sudo sed -i -e "s|location / {|include conf.d/drop;\n\n\tlocation / {|g" /etc/nginx/conf.d/foundryvtt.conf
 sudo cp /aws-foundry-ssl/files/nginx/drop /etc/nginx/conf.d/drop
 sudo systemctl restart nginx
 
-# configure foundry to use ssl
+# Configure Foundry to use SSL
 sudo sed -i 's/"proxyPort":.*/"proxyPort": "443",/g' /foundrydata/Config/options.json
 sudo sed -i 's/"proxySSL":.*/"proxySSL": true,/g' /foundrydata/Config/options.json

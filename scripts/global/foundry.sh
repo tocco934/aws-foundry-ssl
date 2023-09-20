@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# grab variables
+# Grab variables
 source /foundryssl/variables_temp.sh
 source /foundryssl/variables.sh
 
-# download foundry from patreon link or google drive
+# Download foundry from Patreon link or Google Drive
 cd /home/foundry/foundry-install
 
 
@@ -30,20 +30,19 @@ fi
 unzip -u foundry.zip
 rm -f foundry.zip
 
-# allow rwx in the Data folder only for ec2-user
+# Allow rwx in the Data folder only for ec2-user
 chown -R foundry:foundry /home/foundry/ /foundrydata
-find /foundrydata -type d -exec chmod 765 {} +
+find /foundrydata -type d -exec chmod 775 {} +
 find /foundrydata -type f -exec chmod 664 {} +
 
-# start foundry and add to boot
+# Start foundry and add to boot
 sudo cp /aws-foundry-ssl/files/foundry/foundry.service /etc/systemd/system/foundry.service
 sudo chmod 644 /etc/systemd/system/foundry.service
+
 sudo systemctl daemon-reload
-sudo systemctl start foundry
-sudo systemctl enable foundry
+sudo systemctl enable --now foundry
 
-
-# configure foundry aws json file
+# Configure foundry aws json file
 F_DIR='/foundrydata/Config/'
 echo "Start time: $(date +%s)"
 while (( Edit_Retry < 45 )) ; do

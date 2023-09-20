@@ -1,0 +1,5 @@
+[Unit]
+Description=Set dynamic DNS in case it changes
+
+[Service]
+ExecStart=sudo bash /foundrycron/dynamic_dns.sh
