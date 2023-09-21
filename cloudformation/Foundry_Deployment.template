@@ -16,13 +16,21 @@
 				},
 				{
 					"Label": {
-						"default": "SSL Configuration"
+						"default": "Domain and SSL Configuration"
 					},
 					"Parameters": [
 						"FullyQualifiedDomainName",
 						"SubdomainName",
-						"ConfigureRoute53Bool",
 						"WebServerBool",
+						"ConfigureRoute53Bool"
+					]
+				},
+				{
+					"Label": {
+						"default": "SSL Configuration"
+					},
+					"Parameters": [
+						"UseLetsEncryptSSL",
 						"Email"
 					]
 				},
@@ -47,14 +55,6 @@
 						"S3BucketName",
 						"TakeSnapshots",
 						"SnapshotFrequency"
-					]
-				},
-				{
-					"Label": {
-						"default": "Testing Options"
-					},
-					"Parameters": [
-						"UseLetsEncryptSSL"
 					]
 				}
 			]
@@ -88,6 +88,15 @@
 			"AllowedPattern": "^[a-z]+$",
 			"ConstraintDescription": "Must be all lowercase, no letters, no spaces, and no symbols."
 		},
+		"WebServerBool": {
+			"Description": "Set this to true if you would like your instance to act as the primary web server for your base domain as well as host Foundry.",
+			"Type": "String",
+			"AllowedValues": [
+				"True",
+				"False"
+			],
+			"Default": "False"
+		},
 		"ConfigureRoute53Bool": {
 			"Description": "If you haven't set up Route53 before, leave this set to True. Set it to False if your Foundry DNS records already exist. Note: CloudFormation doesn't remove existing Route53 Records, even if it set them up.",
 			"Type": "String",
@@ -97,17 +106,17 @@
 			],
 			"Default": "True"
 		},
-		"WebServerBool": {
-			"Description": "Set this to true if you would like your instance to act as a web server for your base domain as well as host Foundry.",
+		"UseLetsEncryptSSL": {
+			"Description": "Run the LetsEncrypt SSL script. Set to False if you're testing, otherwise leave it at True to use https/SSL.",
 			"Type": "String",
 			"AllowedValues": [
 				"True",
 				"False"
 			],
-			"Default": "False"
+			"Default": "True"
 		},
 		"Email": {
-			"Description": "A valid email address for LetsEncrypt SSL certificates.",
+			"Description": "A valid email address is required for LetsEncrypt SSL certificates.",
 			"Type": "String",
 			"MinLength": 1,
 			"ConstraintDescription": "Please enter a valid email address."
@@ -185,15 +194,6 @@
 				"Daily",
 				"Weekly"
 			]
-		},
-		"UseLetsEncryptSSL": {
-			"Description": "Run the LetsEncrypt SSL script. Set to False if you're testing, otherwise leave it at True to use https/SSL.",
-			"Type": "String",
-			"AllowedValues": [
-				"True",
-				"False"
-			],
-			"Default": "True"
 		}
 	},
 	"Conditions": {

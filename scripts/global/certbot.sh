@@ -15,16 +15,15 @@ sudo cp /aws-foundry-ssl/files/certbot/certbot_renew.sh /foundrycron/certbot_ren
 sudo cp /aws-foundry-ssl/files/certbot/certbot_renew.service /etc/systemd/system/
 sudo cp /aws-foundry-ssl/files/certbot/certbot_renew.timer /etc/systemd/system/
 
-sudo systemctl daemon-reload
-sudo systemctl enable --now certbot_renew.timer
-
-sudo touch /var/log/foundrycron/certbot_renew.log
-
 # Not sure what this does?
 sudo sed -i -e "s|location / {|include conf.d/drop;\n\n\tlocation / {|g" /etc/nginx/conf.d/foundryvtt.conf
 sudo cp /aws-foundry-ssl/files/nginx/drop /etc/nginx/conf.d/drop
-sudo systemctl restart nginx
 
 # Configure Foundry to use SSL
 sudo sed -i 's/"proxyPort":.*/"proxyPort": "443",/g' /foundrydata/Config/options.json
 sudo sed -i 's/"proxySSL":.*/"proxySSL": true,/g' /foundrydata/Config/options.json
+
+# Kick off certbot
+sudo touch /var/log/foundrycron/certbot_renew.log
+sudo systemctl daemon-reload
+sudo systemctl enable --now certbot_renew.timer

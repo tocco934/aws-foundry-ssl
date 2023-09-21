@@ -2,7 +2,7 @@
 Description=Run certbot twice daily
 
 [Timer]
-OnBootSec=15s
+OnBootSec=30s
 OnUnitActiveSec=12h
 RandomizedDelaySec=43200
 Persistent=true

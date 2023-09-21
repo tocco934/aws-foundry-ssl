@@ -25,11 +25,11 @@ It's working, but still considered experimental.
 - Uplift: `yum` calls were changed use `dnf`. `yum` itself [is deprecated](https://github.com/rpm-software-management/yum) in favour of `dnf`.
 - Uplift: All legacy `crontab` timers have been migrated to [`systemd` timers](https://wiki.archlinux.org/title/Systemd/Timers)
 - Uplift: Node install script [was deprecated](https://github.com/nodesource/distributions) and so now it installs with `dnf`
-- Uplift: `amazon-linux-extras` no longer exists; Instead install `nginx` via `dnf`
+- Uplift: `amazon-linux-extras` [no longer exists](https://aws.amazon.com/linux/amazon-linux-2023/faqs/); Instead install `nginx` via `dnf`
 - Uplift: Tidied up some other bits and pieces, added a few extra echoes to help diagnose logging
 - Uplift: `t3` instances are fine, but `t3a` instances are cheaper for very similar workloads so they're now the default
-  - I found Foundry would run on a `.micro` instance, but it would also easily go OOM and cause the EC2 to freak out. This would cause CPU usage (and your hosting costs) to spiral out of control so they're no longer an option
-  - I've also added ARM-based `t4g` instances as an option, which is cheaper (ever so slightly) than the `t3` and `t3a` equivalents
+  - I found Foundry would run on a `.micro` instance, but it'd also run out of memory and cause the EC2 to freak out. This resulted in CPU usage (and hosting costs) to spiral out of control
+  - I've also added ARM-based `t4g` instances as an option, which are cheaper (ever so slightly) than the `t3` and `t3a` equivalents
   - `m6`-class instances added for people who are made of moneybags, replacing the older `m4` instances
 - New: Send certbot's update logs to CloudWatch
 - New: Can choose to stop LetsEncrypt running if you're trying to get it to deploy and you don't want to run into the certificate exhaustion. See https://letsencrypt.org/docs/duplicate-certificate-limit/
@@ -45,6 +45,7 @@ It's working, but still considered experimental.
 - Store LetsEncrypt PEM keys in AWS Secrets Manager and retrieve them instead of requesting new ones to work around the issuance limit (is that even possible / supported?)
 - Investigate FoundryVTT not wanting to save preferences (???)
 - Better ownership/permissions?
+- Automatically select the `x86_64` or `arm64` image based on instance choice
 
 ## Upgrading From a Previous Instance
 
