@@ -25,5 +25,7 @@ sudo sed -i 's/"proxySSL":.*/"proxySSL": true,/g' /foundrydata/Config/options.js
 
 # Kick off certbot
 sudo touch /var/log/foundrycron/certbot_renew.log
+
+source /foundrycron/certbot_renew.sh
 sudo systemctl daemon-reload
 sudo systemctl enable --now certbot_renew.timer
