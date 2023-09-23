@@ -592,6 +592,9 @@
 							}
 						},
 						"files": {
+							"/tmp/foundry-setup.log": {
+								"content": "======= STARTING INSTALL =======\n"
+							},
 							"/foundryssl/variables.sh": {
 								"content": {
 									"Fn::Join": [
@@ -696,10 +699,7 @@
 								"command": "sudo git clone https://github.com/mikehdt/aws-foundry-ssl.git",
 								"cwd": "/"
 							},
-							"C_Setup_Log": {
-								"command": "sudo touch /tmp/foundry-setup.log"
-							},
-							"D_Start_Install": {
+							"C_Start_Install": {
 								"command": "sudo bash /aws-foundry-ssl/scripts/global/install.sh",
 								"cwd": "/"
 							}
