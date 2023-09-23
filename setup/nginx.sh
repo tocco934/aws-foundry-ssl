@@ -11,7 +11,7 @@ sudo dnf install nginx -y
 
 # Configure nginx
 sudo mkdir /var/log/nginx/foundry
-sudo cp /aws-foundry-ssl/files/nginx/${foundry_file} /etc/nginx/conf.d/foundryvtt.conf
+sudo cp /aws-foundry-ssl/setup/nginx/${foundry_file} /etc/nginx/conf.d/foundryvtt.conf
 sudo sed -i "s/YOURSUBDOMAINHERE/${subdomain}/g" /etc/nginx/conf.d/foundryvtt.conf
 sudo sed -i "s/YOURDOMAINHERE/${fqdn}/g" /etc/nginx/conf.d/foundryvtt.conf
 
