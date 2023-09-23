@@ -1,7 +1,8 @@
 [Unit]
-Description=Run certbot without a random delay
+Description=Run certbot once at start without a random delay
 
 [Timer]
+Unit=certbot.service
 OnActiveSec=30s
 
 [Install]

@@ -162,7 +162,7 @@
 		},
 		"SshAccessIP": {
 			"Type": "String",
-			"Description": "Will allowing TCP port 22 (SSH) Inbound for the given IP Range. You MUST enter a range. For a single IP put /32 at the end. You likely want to use your public IP (https://www.whatsmyip.org/). Example of a valid entry: 123.45.67.89/32. If you leave this blank, no SSH rule will be configured. You can also set this manually later in the EC2 instance's Security Group",
+			"Description": "Will allow TCP port 22 (SSH) Inbound access for the given IP range. You MUST enter a range. For a single IP put /32 at the end. You likely want to use your public IP (https://www.whatsmyip.org/). Example of a valid entry: 123.45.67.89/32. If you leave this blank, no SSH rule will be configured. You can also set this manually later in the EC2 instance's Security Group",
 			"Default": "",
 			"ConstraintDescription": "Must be a valid IP/CIDR range."
 		},
@@ -592,13 +592,6 @@
 							}
 						},
 						"files": {
-							"/tmp/foundry-setup.log": {
-								"content": {
-									"Fn::Join": [
-										"", [""]
-									]
-								}
-							},
 							"/foundryssl/variables.sh": {
 								"content": {
 									"Fn::Join": [
@@ -699,11 +692,14 @@
 							"A_Install_Git": {
 								"command": "sudo dnf install -y git"
 							},
-							"B_Git_Clone": {
+							"B_Clone_Repo": {
 								"command": "sudo git clone https://github.com/mikehdt/aws-foundry-ssl.git",
 								"cwd": "/"
 							},
-							"C_Start_Install": {
+							"C_Setup_Log": {
+								"command": "sudo touch /tmp/foundry-setup.log"
+							},
+							"D_Start_Install": {
 								"command": "sudo bash /aws-foundry-ssl/scripts/global/install.sh",
 								"cwd": "/"
 							}

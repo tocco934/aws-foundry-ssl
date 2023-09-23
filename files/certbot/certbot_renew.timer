@@ -2,9 +2,9 @@
 Description=Run certbot twice daily
 
 [Timer]
+Unit=certbot.service
 OnUnitActiveSec=12h
 RandomizedDelaySec=60m
-Persistent=true
 
 [Install]
 WantedBy=timers.target

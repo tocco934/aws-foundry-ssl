@@ -1,7 +1,0 @@
-[Unit]
-Description=Certbot SSL
-Documentation=https://certbot.eff.org/docs
-
-[Service]
-Type=oneshot
-ExecStart=sudo bash /foundrycron/certbot.sh
