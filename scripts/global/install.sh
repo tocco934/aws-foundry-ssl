@@ -23,14 +23,14 @@ source /aws-foundry-ssl/scripts/global/foundry.sh
 echo "======= INSTALLING NGINX ======="
 source /aws-foundry-ssl/scripts/global/nginx.sh
 
-# Set up SSL certificates with LetsEncrypt
-echo "======= INSTALLING LETSENCRYPT CERTBOT ======="
-source /aws-foundry-ssl/scripts/global/certbot.sh
-
 # Amazon Cloudwatch logs and domain registrar and
 echo "===== INSTALLING AWS CLOUDWATCH AND HOSTED ZONE CRON ====="
 source /aws-foundry-ssl/scripts/amazon/cloudwatch_config.sh
 source /aws-foundry-ssl/scripts/amazon/hosted_zone_id.sh
+
+# Set up SSL certificates with LetsEncrypt
+echo "======= INSTALLING LETSENCRYPT CERTBOT ======="
+source /aws-foundry-ssl/scripts/global/certbot.sh
 
 # Restart Foundry so AWS.json is fully loaded
 echo "===== RESTARTING FOUNDRY ====="
