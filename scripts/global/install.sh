@@ -39,6 +39,7 @@ sudo systemctl restart foundry
 # Clean up install files (Comment out during testing)
 echo "===== CLEANUP AND USER PERMISSIONS ====="
 sudo usermod -a -G foundry ec2-user
+sudo chown ec2-user:ec2-user -R /aws-foundry-ssl
 sudo chmod 700 /tmp/foundry-setup.log
 sudo rm /foundryssl/variables_temp.sh
 # sudo rm -r /aws-foundry-ssl
