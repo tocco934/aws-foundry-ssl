@@ -699,34 +699,16 @@
 							}
 						},
 						"commands": {
-							"A1_Install_Git": {
+							"A_Install_Git": {
 								"command": "sudo dnf install -y git"
 							},
-							"A2_Install_OpenSSL": {
-								"command": "sudo dnf install -y openssl-devel"
-							},
-							"A3_Install_AWS_CloudWatch": {
-								"command": "sudo dnf install -y amazon-cloudwatch-agent"
-							},
-							"B1_Install_Nodejs_18": {
-								"command": "sudo dnf install https://rpm.nodesource.com/pub_18.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y"
-							},
-							"B2_Install_Nodejs_18_cont": {
-								"command": "sudo dnf install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1"
-							},
-							"C_Make_Dirs": {
-								"command": "sudo mkdir -p /foundrycron /var/log/foundrycron /home/foundry/foundry-install /foundrydata"
-							},
-							"D_Git_Clone": {
+							"B_Git_Clone": {
 								"command": "sudo git clone https://github.com/mikehdt/aws-foundry-ssl.git",
 								"cwd": "/"
 							},
-							"E_Start_Install": {
+							"C_Start_Install": {
 								"command": "sudo bash /aws-foundry-ssl/scripts/global/install.sh",
 								"cwd": "/"
-							},
-							"F_Give_Ec2_User_Access": {
-								"command": "sudo usermod -a -G foundry ec2-user"
 							}
 						}
 					}

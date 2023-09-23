@@ -9,6 +9,13 @@ exec > /tmp/foundry-setup.log 2>&1
 set -x
 
 # Install foundry
+echo "======= INSTALLING DEPENDENCIES ======="
+sudo dnf install https://rpm.nodesource.com/pub_18.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y
+sudo dnf install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1
+sudo dnf install -y openssl-devel
+sudo dnf install -y amazon-cloudwatch-agent
+
+# Install foundry
 echo "======= INSTALLING FOUNDRY ======="
 source /aws-foundry-ssl/scripts/global/foundry.sh
 
@@ -30,10 +37,11 @@ echo "===== RESTARTING FOUNDRY ====="
 sudo systemctl restart foundry
 
 # Clean up install files (Comment out during testing)
-echo "===== CLEANUP ====="
+echo "===== CLEANUP AND USER PERMISSIONS ====="
+sudo usermod -a -G foundry ec2-user
 sudo chmod 700 /tmp/foundry-setup.log
-#sudo rm -r /aws-foundry-ssl
 sudo rm /foundryssl/variables_temp.sh
+# sudo rm -r /aws-foundry-ssl
 
 echo "===== DONE ====="
 echo "Finished setting up Foundry!"

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+sudo mkdir -p /foundrycron /var/log/foundrycron /home/foundry/foundry-install /foundrydata
+
 # Download Foundry from Patreon link or Google Drive
 cd /home/foundry/foundry-install
 
