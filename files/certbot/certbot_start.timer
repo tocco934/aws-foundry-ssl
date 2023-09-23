@@ -1,0 +1,8 @@
+[Unit]
+Description=Start CertBot a little after to allow the DNS to settle
+
+[Timer]
+OnBootSec=30s
+
+[Install]
+WantedBy=timers.target

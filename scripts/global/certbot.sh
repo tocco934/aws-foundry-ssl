@@ -14,6 +14,7 @@ sudo ln -s /opt/certbot/bin/certbot /usr/bin/certbot
 sudo cp /aws-foundry-ssl/files/certbot/certbot_renew.sh /foundrycron/certbot_renew.sh
 sudo cp /aws-foundry-ssl/files/certbot/certbot_renew.service /etc/systemd/system/
 sudo cp /aws-foundry-ssl/files/certbot/certbot_renew.timer /etc/systemd/system/
+sudo cp /aws-foundry-ssl/files/certbot/certbot_start.timer /etc/systemd/system/
 
 # Not sure what this does?
 sudo sed -i -e "s|location / {|include conf.d/drop;\n\n\tlocation / {|g" /etc/nginx/conf.d/foundryvtt.conf
@@ -27,6 +28,6 @@ sudo sed -i 's/"proxySSL":.*/"proxySSL": true,/g' /foundrydata/Config/options.js
 sudo touch /var/log/foundrycron/certbot_renew.log
 
 # Run the script in another process
-sudo /bin/bash /foundrycron/certbot_renew.sh
 sudo systemctl daemon-reload
+sudo systemctl enable --now certbot_start.timer
 sudo systemctl enable --now certbot_renew.timer
