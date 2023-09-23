@@ -36,14 +36,11 @@ It's working, but still considered experimental.
 
 ### Future Considerations
 
-- The `ec2-user` and `foundry` users permissions easily conflict with each other eg. if you use SCP to upload things to `/foundrydata`
-  - Add script to fix `/foundrydata` permissions?
 - Is AWS LightSail even a possibility?
 - Improve CloudWatch logs (?)
 - Add upgrade scripts eg. for when NodeJS 20.x becomes the default
 - Add script to facilitate transfer between two EC2s?
 - Store LetsEncrypt PEM keys in AWS Secrets Manager and retrieve them instead of requesting new ones to work around the issuance limit (is that even possible / supported?)
-- Investigate FoundryVTT not wanting to save preferences (???)
 - Better ownership/permissions?
 - Automatically select the `x86_64` or `arm64` image based on instance choice
 
@@ -57,7 +54,11 @@ You could upgrade it in-place on an older stack, but that's beyond the scope of 
 
 I recommend that you reinstall the _add-ons_ you were using manually one-by-one, as many of the add-ons from Foundry 10 have been updated to Foundry 11, and you'll want to make sure dependencies are all in place. Your worlds should be okay to bring over, and it should upgrade them to Foundry's new internal format.
 
-If you use SCP to transfer things into `/foundrydata`, make sure you set the correct permissions and user ownership after transfer.
+### File and Folder Permissions
+
+If you use SCP to transfer things into `/foundrydata`, make sure you set the correct permissions and user ownership after transfer. The script file `fix_folder_permissions.sh` can help.
+
+Run it with `sudo sh /aws-foundry-ssl/scripts/fix_folder_permissions.sh`.
 
 ## Installation
 

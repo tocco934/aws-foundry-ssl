@@ -1,5 +1,4 @@
 #!/bin/bash
-source /foundryssl/variables.sh
 
 if [[ ${webserver_bool} == "True" ]]; then
     foundry_file="foundryvtt_webserver.conf"

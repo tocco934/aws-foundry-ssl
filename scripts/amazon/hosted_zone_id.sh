@@ -1,7 +1,9 @@
 #!/bin/bash
 
-[ -z "$fqdn" ] && echo "WARNING: \$fqdn is empty"
-
+if [ -z "${fqdn}" ]; then
+    echo "Variable \$fqdn is empty"
+    exit 1
+fi
 
 zone_id=`aws route53 list-hosted-zones | jq ".HostedZones[] | select(.Name==\"${fqdn}.\") | .Id" | cut -d / -f3 | cut -d '"' -f1`
 

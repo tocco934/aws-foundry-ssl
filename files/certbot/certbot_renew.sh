@@ -4,12 +4,22 @@ source /foundryssl/variables.sh
 echo $PATH > /var/log/foundrycron/path.log 2>&1
 
 if [ "${enable_letsencrypt}" == "False" ]; then
-    echo "LetsEncrypt is disabled; exiting..."
+    echo "LetsEncrypt is disabled - check /foundryssl/variables.sh; exiting..."
     exit 0
 fi
 
-if [ "${email}" == "" ]; then
+if [ -z "${email}" ]; then
     echo "Email address is not configured; exiting..."
+    exit 1
+fi
+
+if [ -z "${subdomain}" ]; then
+    echo "Subdomain is not configured; exiting..."
+    exit 1
+fi
+
+if [ -z "${fqdn}" ]; then
+    echo "Fully qualified domain name is not configured; exiting..."
     exit 1
 fi
 

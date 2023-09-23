@@ -1,25 +1,22 @@
 #!/bin/bash
 
-# Grab variables
-source /foundryssl/variables_temp.sh
-source /foundryssl/variables.sh
-
-# Download foundry from Patreon link or Google Drive
+# Download Foundry from Patreon link or Google Drive
 cd /home/foundry/foundry-install
-
 
 if [[ `echo ${foundry_download_link}  | cut -d '/' -f3` == 'drive.google.com' ]]; then
     fileid=`echo ${foundry_download_link} | cut -d '/' -f6`
+
     while (( FS_Retry < 4 )) ; do
         sudo wget --quiet --save-cookies cookies.txt --keep-session-cookies --no-check-certificate "https://docs.google.com/uc?export=download&id=${fileid}" -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p' > confirm.txt
         sudo wget --load-cookies cookies.txt -O foundry.zip 'https://docs.google.com/uc?export=download&id='${fileid}'&confirm='$(<confirm.txt) && rm -rf cookies.txt confirm.txt
         filesize=$(stat -c%s "./foundry.zip")
         echo "Size of foundry.zip = $filesize bytes."
+
         if (( filesize > 100000000 )); then
-            echo "Filesize seems about right! Proceeding."
+            echo "Filesize seems about right! Proceeding..."
             break
         else
-            echo "Filesize looking too small. Retrying."
+            echo "Filesize looking too small. Retrying..."
             ((FS_Retry++))
         fi
     done
