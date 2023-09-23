@@ -36,13 +36,12 @@ It's working, but still considered experimental.
 
 ### Future Considerations
 
-- Is AWS LightSail even a possibility?
 - Improve CloudWatch logs (?)
 - Add upgrade scripts eg. for when NodeJS 20.x becomes the default
 - Add script to facilitate transfer between two EC2s?
 - Store LetsEncrypt PEM keys in AWS Secrets Manager and retrieve them instead of requesting new ones to work around the issuance limit (is that even possible / supported?)
 - Better ownership/permissions?
-- Automatically select the `x86_64` or `arm64` image based on instance choice
+- Automatically select the `x86_64` or `arm64` image based on instance choice (even possible?)
 
 ## Upgrading From a Previous Instance
 
@@ -58,7 +57,7 @@ I recommend that you reinstall the _add-ons_ you were using manually one-by-one,
 
 If you use SCP to transfer things into `/foundrydata`, make sure you set the correct permissions and user ownership after transfer. The script file `fix_folder_permissions.sh` can help.
 
-Run it with `sudo sh /aws-foundry-ssl/scripts/fix_folder_permissions.sh`.
+SSH into your EC2 instance, and run it with `sudo sh /aws-foundry-ssl/utils/fix_folder_permissions.sh`.
 
 ## Installation
 
