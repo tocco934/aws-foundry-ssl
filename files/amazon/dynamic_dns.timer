@@ -2,8 +2,8 @@
 Description=Poll to set dynamic DNS in case it changes
 
 [Timer]
-OnUnitActiveSec=12h
 OnBootSec=15s
+OnUnitActiveSec=12h
 Persistent=true
 
 [Install]
