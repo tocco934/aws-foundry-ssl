@@ -1,6 +1,6 @@
 {
 	"AWSTemplateFormatVersion": "2010-09-09",
-	"Description": "Run FoundryVTT on EC2. It also allows for optional snap-shots. Originally made by Lupert and Cat. Updated for Node 18.x and Amazon Linux 2023 by mikehdt.",
+	"Description": "Run FoundryVTT on EC2 with LetsEncrypt SSL support.",
 	"Metadata": {
 		"AWS::CloudFormation::Interface": {
 			"ParameterGroups": [
@@ -42,8 +42,8 @@
 						"InstanceKey",
 						"InstanceType",
 						"AMI",
-						"OptionalFixedIP",
-						"OptionalSshAccess"
+						"UseFixedIP",
+						"SshAccessIP"
 					]
 				},
 				{
@@ -62,35 +62,38 @@
 	},
 	"Parameters": {
 		"FoundryDownloadLink": {
-			"Description": "Your personal link to download Foundry. Specify either use a Patreon link, or a publicly shared Google Drive link.",
-			"Type": "String"
+			"Type": "String",
+			"Description": "Your personal link to download Foundry. Specify either a Patreon link, or a publicly shared Google Drive link.",
+			"AllowedPattern" : ".+"
 		},
 		"AdminUserName": {
 			"Type": "String",
 			"Description": "Username to be used for the Foundry admin user.",
+			"AllowedPattern" : "[A-Za-z]+",
 			"Default": "FoundryAdmin"
 		},
 		"AdminUserPW": {
 			"Type": "String",
-			"NoEcho": "true",
 			"Description": "Have a minimum of 8 characters and a maximum of 128 characters include a minimum of three of the following mix of character types: uppercase, lowercase, numbers, and symbols.",
-			"ConstraintDescription": "Have a minimum of 8 characters and a maximum of 128 characters include a minimum of three of the following mix of character types: uppercase, lowercase, numbers, and symbols."
+			"ConstraintDescription": "Have a minimum of 8 characters and a maximum of 128 characters include a minimum of three of the following mix of character types: uppercase, lowercase, numbers, and symbols.",
+			"AllowedPattern" : ".{8,128}",
+			"NoEcho": "True"
 		},
 		"FullyQualifiedDomainName": {
-			"Description": "This is the name of the domain you are using eg. `mydomain.com`. Do NOT include subdomain qualifiers - no `www`!",
 			"Type": "String",
+			"Description": "This is the name of the domain you are using eg. `mydomain.com`. Do NOT include subdomain qualifiers - no `www`!",
 			"AllowedPattern": "^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\\.[a-zA-Z]{2,})+$"
 		},
 		"SubdomainName": {
-			"Description": "Name for the final URL to access foundry. Must be all lowercase, no letters, no spaces, and no symbols. eg. `foundry` will become `foundry.mydomain.com`",
 			"Type": "String",
-			"Default": "foundry",
+			"Description": "Name for the final URL to access foundry. Must be all lowercase, no letters, no spaces, and no symbols. eg. `foundry` will become `foundry.mydomain.com`",
 			"AllowedPattern": "^[a-z]+$",
-			"ConstraintDescription": "Must be all lowercase, no letters, no spaces, and no symbols."
+			"ConstraintDescription": "Must be all lowercase, no letters, no spaces, and no symbols.",
+			"Default": "foundry"
 		},
 		"WebServerBool": {
-			"Description": "Set this to true if you would like your instance to act as the primary web server for your base domain as well as host Foundry.",
 			"Type": "String",
+			"Description": "Set this to true if you would like your instance to act as the primary web server for your base domain as well as host Foundry.",
 			"AllowedValues": [
 				"True",
 				"False"
@@ -98,8 +101,8 @@
 			"Default": "False"
 		},
 		"ConfigureRoute53Bool": {
-			"Description": "If you haven't set up Route53 before, leave this set to True. Set it to False if your Foundry DNS records already exist. Note: CloudFormation doesn't remove existing Route53 Records, even if it set them up.",
 			"Type": "String",
+			"Description": "If you haven't set up Route53 before, leave this set to True. Set it to False if your Foundry DNS records already exist. Note: Sometimes CloudFormation doesn't remove existing Route53 Records, even if it set them up. Check Route53 if stack creation fails there.",
 			"AllowedValues": [
 				"True",
 				"False"
@@ -107,8 +110,8 @@
 			"Default": "True"
 		},
 		"UseLetsEncryptSSL": {
-			"Description": "Run the LetsEncrypt SSL script. Set to False if you're testing, otherwise leave it at True to use https/SSL.",
 			"Type": "String",
+			"Description": "Run the LetsEncrypt SSL script. Set to False if you're testing, otherwise leave it at True to use https/SSL.",
 			"AllowedValues": [
 				"True",
 				"False"
@@ -116,8 +119,8 @@
 			"Default": "True"
 		},
 		"Email": {
-			"Description": "A valid email address is required for LetsEncrypt SSL certificates.",
 			"Type": "String",
+			"Description": "A valid email address is required for LetsEncrypt SSL certificates.",
 			"MinLength": 1,
 			"ConstraintDescription": "Please enter a valid email address."
 		},
@@ -127,44 +130,45 @@
 			"ConstraintDescription": "See https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#having-ec2-create-your-key-pair"
 		},
 		"InstanceType": {
-			"Description": "Server EC2 instance type. Pick an instance size based on estimated use and cost - if unsure, use `t3a.small` for best cost saving. `t4g` (graviton) instances need an `arm64` image configured below. `m6i` and `m6a` (intel/amd) instances are fast but expensive and probably not recommended unless you know you need them. See https://aws.amazon.com/ec2/pricing/on-demand/ for info.",
 			"Type": "String",
-			"Default": "t3a.small",
+			"Description": "EC2 server instance type. Pick a size based on estimated use and cost - if unsure, use `t4g.small` for light performance / cost saving. `m6`-class instances are fast but very expensive and probably not recommended unless you know you need them. See https://aws.amazon.com/ec2/pricing/on-demand/ for info.",
 			"AllowedValues": [
-				"t3.small",
-				"t3.medium",
 				"t3a.small",
 				"t3a.medium",
-				"m6a.large",
-				"m6a.xlarge",
 				"t4g.small",
-				"t4g.medium"
+				"t4g.medium",
+				"m6a.large",
+				"m6a.xlarge"
 			],
-			"ConstraintDescription": "Must be a valid EC2 instance type."
+			"Default": "t4g.small"
 		},
 		"AMI": {
 			"Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
-			"Description": "Managed AMI (operating system) image for the EC2. If you're using a `t4g` instance, you must change 'x86_64' to 'arm64'. Otherwise leave this as-is.",
-			"Default": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64"
+			"Description": "Managed AMI (operating system) image for the EC2. If you're using a `t4g` instance, leave it as 'arm64'. `t3` and `m6` instances MUST change this to `x86_64`.",
+			"AllowedValues": [
+				"/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-arm64",
+				"/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64"
+			],
+			"Default": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-arm64"
 		},
-		"OptionalFixedIP": {
-			"Description": "Allows you to have a dedicated public IP for your instance. This prevents the IP from changing everytime you shutdown the instance. EIPs have a conditional cost. If an EIP is in use, it is free. If the EIP is not in use a minimal cost is applied.",
+		"UseFixedIP": {
 			"Type": "String",
-			"Default": "False",
+			"Description": "Allows you to have a dedicated public IP for your instance. This prevents the IP from changing everytime you shutdown the instance. EIPs have a conditional cost. If an EIP is in use, it is free. If the EIP is not in use a minimal cost is applied.",
 			"AllowedValues": [
 				"True",
 				"False"
-			]
+			],
+			"Default": "False"
 		},
-		"OptionalSshAccess": {
-			"Description": "Will allowing TCP port 22 (SSH) Inbound for the given IP Range. You MUST enter a range. For a single IP put /32 at the end. You likely want to use your public IP (https://www.whatsmyip.org/). Example of a valid entry: 123.45.67.89/32. If you leave this blank, no SSH rule will be configured. You can also set this manually later in the EC2 instance's Security Group",
+		"SshAccessIP": {
 			"Type": "String",
+			"Description": "Will allowing TCP port 22 (SSH) Inbound for the given IP Range. You MUST enter a range. For a single IP put /32 at the end. You likely want to use your public IP (https://www.whatsmyip.org/). Example of a valid entry: 123.45.67.89/32. If you leave this blank, no SSH rule will be configured. You can also set this manually later in the EC2 instance's Security Group",
 			"Default": "",
 			"ConstraintDescription": "Must be a valid IP/CIDR range."
 		},
 		"UseExistingS3Bucket": {
-			"Description": "If you have an S3 bucket already set up for Foundry, set this option to True. The S3 bucket must have a public access policy set. If you don't have a bucket set up, one will be created for you with the name specified above.",
 			"Type": "String",
+			"Description": "If you have an S3 bucket already set up for Foundry, set this option to True. The S3 bucket must have a public access policy set. If you don't have a bucket set up, one will be created for you with the name specified next.",
 			"AllowedValues": [
 				"True",
 				"False"
@@ -172,14 +176,14 @@
 			"Default": "False"
 		},
 		"S3BucketName": {
+			"Type": "String",
 			"Description": "Name for S3 bucket that will be created or used. This must be globally unique across all of AWS, so be a little creative. Must be all lowercase letters or numbers, no spaces, and no symbols expect dash (-).",
 			"ConstraintDescription": "This must be globally unique across all of AWS, so be a little creative. Must be all lowercase letters or numbers, no spaces, and no symbols expect dash (-).",
-			"Type": "String",
 			"AllowedPattern": "^[a-z|0-9]+([-|a-z|0-9]+)*[a-z|0-9]$"
 		},
 		"TakeSnapshots": {
-			"Description": "Select True if you want to take snapshots of your instance. This is recommended but comes with a minimal cost to store the snapshots. This will retain 5 snapshots by default. See https://aws.amazon.com/ebs/pricing/",
 			"Type": "String",
+			"Description": "Select True if you want to take snapshots of your instance. This is recommended but comes with a minimal cost to store the snapshots. This will retain 5 snapshots by default. See https://aws.amazon.com/ebs/pricing/",
 			"AllowedValues": [
 				"True",
 				"False"
@@ -211,7 +215,7 @@
 					"Fn::Equals": [
 						"",
 						{
-							"Ref": "OptionalSshAccess"
+							"Ref": "SshAccessIP"
 						}
 					]
 				}
@@ -262,7 +266,7 @@
 		"CreateEIP": {
 			"Fn::Equals": [
 				{
-					"Ref": "OptionalFixedIP"
+					"Ref": "UseFixedIP"
 				},
 				"True"
 			]
@@ -378,7 +382,7 @@
 					]
 				},
 				"CidrIp": {
-					"Ref": "OptionalSshAccess"
+					"Ref": "SshAccessIP"
 				},
 				"FromPort": 22,
 				"IpProtocol": "tcp",
@@ -593,8 +597,7 @@
 									"Fn::Join": [
 										"",
 										[
-											"Starting Foundry install...",
-											"\n"
+											"======= STARTING INSTALL =======\n"
 										]
 									]
 								}
@@ -604,12 +607,9 @@
 									"Fn::Join": [
 										"",
 										[
-											"#!/bin/bash",
-											"\n",
-											"foundry_user=foundry",
-											"\n",
-											"foundry_home=/foundrydata",
-											"\n",
+											"#!/bin/bash\n",
+											"foundry_user=foundry\n",
+											"foundry_home=/foundrydata\n",
 											"region=",
 											{
 												"Ref": "AWS::Region"
@@ -647,13 +647,12 @@
 								"owner": "root",
 								"group": "root"
 							},
-							"/foundryssl/variables_temp.sh": {
+							"/foundryssl/variables_tmp.sh": {
 								"content": {
 									"Fn::Join": [
 										"",
 										[
-											"#!/bin/bash",
-											"\n",
+											"#!/bin/bash\n",
 											"foundry_download_link='",
 											{
 												"Ref": "FoundryDownloadLink"
@@ -671,37 +670,6 @@
 													"SecretAccessKey"
 												]
 											}
-										]
-									]
-								},
-								"mode": "000700",
-								"owner": "root",
-								"group": "root"
-							},
-							"/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json": {
-								"content": {
-									"Fn::Join": [
-										"",
-										[
-											"{",
-												"\"agent\": {",
-													"\"run_as_user\": \"root\"",
-												"},",
-												"\"logs\": {",
-													"\"logs_collected\": {",
-														"\"files\": {",
-															"\"collect_list\": [",
-																"{",
-																	"\"file_path\": \"/tmp/foundry-setup.log\",",
-																	"\"log_group_name\": \"foundry-setup\",",
-																	"\"log_stream_name\": \"{instance_id}\",",
-																	"\"retention_in_days\": 14",
-																"}",
-															"]",
-														"}",
-													"}",
-												"}",
-											"}"
 										]
 									]
 								},
