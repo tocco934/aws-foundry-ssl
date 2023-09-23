@@ -29,10 +29,10 @@ fi
 unzip -u foundry.zip
 rm -f foundry.zip
 
-# Allow rwx in the Data folder only for ec2-user
-chown -R foundry:foundry /home/foundry/ /foundrydata
-find /foundrydata -type d -exec chmod 775 {} +
-find /foundrydata -type f -exec chmod 664 {} +
+# Allow rwx in the Data folder only for ec2-user:foundry
+sudo chown -R foundry:foundry /home/foundry /foundrydata
+sudo find /foundrydata -type d -exec chmod 775 {} +
+sudo find /foundrydata -type f -exec chmod 664 {} +
 
 # Start foundry and add to boot
 sudo cp /aws-foundry-ssl/files/foundry/foundry.service /etc/systemd/system/foundry.service
