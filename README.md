@@ -16,23 +16,26 @@ It's working, but still considered experimental.
 ### Fixes and Features
 
 - Fix: S3 bucket ACL permissions were updated for the stricter [default policy](https://aws.amazon.com/about-aws/whats-new/2022/12/amazon-s3-automatically-enable-block-public-access-disable-access-control-lists-buckets-april-2023/) as of circa April 2023
-- Fix: New default AMI security seems to necessitate `sudo` in a few more places
-- Fix The SSL CertBot didn't work on initial startup (but please be aware of the 5-per-week issuance in case of redeploying multiple times)
+- Fix: S3 permissions and configuration was changed in Foundry 11
+- Fix: New default AMI security seems to necessitate `sudo` in the install script
+- Fix: LetsEncrypt SSL certbot didn't work on initial startup
+  - Please be aware of the 5-certificates-per-week maximum issuance in case of redeploying multiple times when setting up or if testing things
+  - I had to learn a lot about systemd timers, in this case splitting certbot into two timers for the one service
+  - Note that certbot _must_ be run after the domain is set up. I've allowed a 30s buffer, but if say CloudFormation takes longer to set up Route53 it may fail
 - Fix: Seemed to be a conflict between running the install scripts on the EC2 and CloudFormation setting up the DNS
-  - Timer script now tests that the domain is not "empty string", and also makes sure the recordset exists before it tries to upsert it
+  - DNS script now tests that the domain is not "empty string", and also makes sure the recordset exists before it tries to upsert it to avoid conflict with CloudFormation
 - Fix: Fixed legacy option warning in `certbot`'s CLI call
 - Fix: Some AWS Route53 issues where a `.` needed to be on the end of the domain
 - Uplift: `yum` calls were changed use `dnf`. `yum` itself [is deprecated](https://github.com/rpm-software-management/yum) in favour of `dnf`.
 - Uplift: All legacy `crontab` timers have been migrated to [`systemd` timers](https://wiki.archlinux.org/title/Systemd/Timers)
-- Uplift: Node install script [was deprecated](https://github.com/nodesource/distributions) and so now it installs with `dnf`
-- Uplift: `amazon-linux-extras` [no longer exists](https://aws.amazon.com/linux/amazon-linux-2023/faqs/); Instead install `nginx` via `dnf`
+- Uplift: Node install script [was deprecated](https://github.com/nodesource/distributions); Instead it installs with `dnf`
+- Uplift: `amazon-linux-extras` [no longer exists](https://aws.amazon.com/linux/amazon-linux-2023/faqs/); Instead it installs `nginx` with `dnf`
 - Uplift: Tidied up some other bits and pieces, added a few extra echoes to help diagnose logging
-- Uplift: `t3` instances are fine, but `t3a` instances are cheaper for very similar workloads so they're now the default
-  - I found Foundry would run on a `.micro` instance, but it'd also run out of memory and cause the EC2 to freak out. This resulted in CPU usage (and hosting costs) to spiral out of control
-  - I've also added ARM-based `t4g` instances as an option, which are cheaper (ever so slightly) than the `t3` and `t3a` equivalents
+- Uplift: `t3a` instances are fine, but `t4g` instances are cheaper for very similar workloads so they're now the default
+  - I found Foundry would _just_ run on a `.micro` instance, but it'd also run out of memory and cause the EC2 to freak out. This resulted in CPU usage (and hosting costs) to spiral out of control, so I removed that size
   - `m6`-class instances added for people who are made of moneybags, replacing the older `m4` instances
 - New: Send certbot's update logs to CloudWatch
-- New: Can choose to stop LetsEncrypt running if you're trying to get it to deploy and you don't want to run into the certificate exhaustion. See https://letsencrypt.org/docs/duplicate-certificate-limit/
+- New: Can choose to _not_ request LetsEncrypt SSL if you're trying to get it to deploy and you don't want to run into the certificate exhaustion. See https://letsencrypt.org/docs/duplicate-certificate-limit/
 
 ### Future Considerations
 
@@ -40,18 +43,20 @@ It's working, but still considered experimental.
 - Add upgrade scripts eg. for when NodeJS 20.x becomes the default
 - Add script to facilitate transfer between two EC2s?
 - Store LetsEncrypt PEM keys in AWS Secrets Manager and retrieve them instead of requesting new ones to work around the issuance limit (is that even possible / supported?)
-- Better ownership/permissions?
+- Better ownership/permissions defaults?
 - Automatically select the `x86_64` or `arm64` image based on instance choice (even possible?)
 
 ## Upgrading From a Previous Instance
 
-Foundry 11 is a big update.
+**Foundry 11 is a big update.**
 
 Many plugins need to be updated etc. in addition to the base hardware and software it runs on. The best thing to do if you're upgrading from Foundry 10 (or earlier) is to back up all the Foundry stuff from the existing EC2. Once you've got it all, then tear down the previous stack. I don't have experience with copying from one EC2 to another, but setting up a second stack _may_ be possible, before tearing down the first.
 
-You could upgrade it in-place on an older stack, but that's beyond the scope of this update.
+You could upgrade it in-place on an older stack, but that's beyond the scope of this project.
 
-I recommend that you reinstall the _add-ons_ you were using manually one-by-one, as many of the add-ons from Foundry 10 have been updated to Foundry 11, and you'll want to make sure dependencies are all in place. Your worlds should be okay to bring over, and it should upgrade them to Foundry's new internal format.
+I recommend that you reinstall the _add-ons_ you were using manually one-by-one, as many of the add-ons from Foundry 10 have been updated to Foundry 11, and you'll want to make sure dependencies are all in place. Many add-ons have also changed ownership, and will need to be pointed to a new source address.
+
+Your worlds should be okay to bring over, and it should prompt to upgrade them to Foundry's new internal format.
 
 ### File and Folder Permissions
 
@@ -63,16 +68,33 @@ SSH into your EC2 instance, and run it with `sudo sh /aws-foundry-ssl/utils/fix_
 
 _Note:_ You'll need some technical expertise to get this running. It's not necessarily click-ops, but it's close.
 
-Full instructions TBC. You can also refer to the original repo's wiki, but the gist is:
+You can also refer to the original repo's wiki, but the gist is:
 
-- Download the NodeJS install of FoundryVTT from Foundry's website, upload it to Google Drive
-  - Make the link publicly shared
+### Foundry Download
+
+- Download the `NodeJS` installer for FoundryVTT from Foundry's website, upload it to Google Drive
+  - Make the link publicly shared (anyone with the link can view)
   - Make note of the link
-- Set up an SSH key in AWS EC2, under Key Pairs (you only ever need to do this _once_, you can reuse it again if needed. Consider rotating keys for better security)
-  - Keep the downloaded private keypair file safe, you'll need it for SCP / PuTTy / SSH access
-- Then upload the CloudFormation script from the `/cloudformation/` folder to AWS, and fill in _all_ the details. Pay particular attention to:
-  - Add the Google Drive link for downloading Foundry
-  - Choose the SSH keypair you set up
+  - Foundry 11.309 or greater is recommended due to fixing a major security flaw in the WebP decoder
+
+### AWS Setup
+
+- Create up an SSH key in AWS EC2, under `EC2 / Network & Security / Key Pairs`
+  - You only need to do this once. If you tear down and redeploy the stack you can reuse the same SSH key
+  - However, consider rotating keys as a good security practise
+  - Keep the downloaded private keypair (PEM or PPK) file safe, you'll need it for SCP / PuTTy / SSH access
+- Then go to CloudFormation and choose to Create a Stack with new resources
+  - Leave `Template is Ready` selected
+  - Choose `Upload a template file`
+  - Upload the `/cloudformation/Foundry_Deployment.template` file
+  - Fill in and check _all_ the details. I've tried to provide sensible defaults. The ones you should pay _particular_ attention to are:
+    1. Add the Google Drive link for downloading Foundry
+    2. Set an admin user password (for IAM)
+    3. Enter your fully qualified domain eg. `mydomain.com`, do _not_ include any `www` or any other prefix
+    4. Enter your email address for LetsEncrypt
+    5. Choose the SSH keypair you set up for the EC2
+    6. (optional) Add your IP to be allowed incoming access via SSH eg. `123.45.67.89/32`. The `/32` is required and will scope the range to your IP only. You can manually set this up later in EC2 Security Groups if you need.
+    7. Choose an S3 bucket name for storing files. This must be globally unique and not use `.`
 
 It should be pretty automated from there. Again, just be careful of the LetsEncrypt deploy limits. If need be, set the LetsEncrypt testing option to `False` if you are deploying rapidly.
 
@@ -81,10 +103,10 @@ It should be pretty automated from there. Again, just be careful of the LetsEncr
 If you can get as far as the EC2 being spun up, then:
 
 - If you encounter a creation error, try again but set CloudFormation to _keep_ resources instead of _rollback_
-- Disable LetsEncrypt / SSL certificate requests in the CF setup, until you're happy that it's working (to avoid running into the limit)
+- Disable LetsEncrypt certificate requests in the CF setup (`UseLetsEncryptSSL` set to `False`), until you're happy that it's working to avoid running into the 5-a-week certificate limit
 - Add your IP to the Inbound rules of the created Security Group (if you didn't already during the CloudFormation config)
 - Grab the EC2's IP
 - Open up PuTTy or similar, connect to the IP with the SSH keypair from earlier (accept once, as you may end up destroying and recreating, which means this IP shouldn't be treated as permanent)
-- `sudo tail -f /tmp/foundry-setup.log`
+- `sudo tail -f /tmp/foundry-setup.log` or `sudo cat /tmp/foundry-setup.log | less` to see the setup log if the EC2 instantiated but the script failed
 
 Hopefully that gives you some insight in what's going on...
