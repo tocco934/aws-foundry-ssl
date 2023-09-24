@@ -486,7 +486,7 @@
 								"POST",
 								"HEAD"
 							],
-							"MaxAgeSeconds": "3000"
+							"MaxAge": "3000"
 						}
 					]
 				}
