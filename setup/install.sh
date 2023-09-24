@@ -5,7 +5,7 @@ source /foundryssl/variables.sh
 source /foundryssl/variables_tmp.sh
 
 # Set up logging to the logfile
-exec > /tmp/foundry-setup.log 2>&1
+exec >> /tmp/foundry-setup.log 2>&1
 set -x
 
 # Install foundry
@@ -41,7 +41,7 @@ echo "===== CLEANUP AND USER PERMISSIONS ====="
 sudo usermod -a -G foundry ec2-user
 sudo chown ec2-user -R /aws-foundry-ssl
 sudo chmod 700 /tmp/foundry-setup.log
-sudo rm /foundryssl/variables_temp.sh
+sudo rm /foundryssl/variables_tmp.sh
 # sudo rm -r /aws-foundry-ssl
 
 echo "===== DONE ====="
