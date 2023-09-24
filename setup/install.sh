@@ -32,7 +32,7 @@ source /aws-foundry-ssl/setup/aws_hosted_zone_id.sh
 echo "======= INSTALLING LETSENCRYPT CERTBOT ======="
 source /aws-foundry-ssl/setup/certbot.sh
 
-# Restart Foundry so AWS.json is fully loaded
+# Restart Foundry so aws-s3.json is fully loaded
 echo "===== RESTARTING FOUNDRY ====="
 sudo systemctl restart foundry
 

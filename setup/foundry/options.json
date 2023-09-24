@@ -6,7 +6,7 @@
   "routePrefix": null,
   "sslCert": null,
   "sslKey": null,
-  "awsConfig": "/foundrydata/Config/AWS.json",
+  "awsConfig": "/foundrydata/Config/aws-s3.json",
   "dataPath": "/foundrydata",
   "proxySSL": true,
   "proxyPort": "443",

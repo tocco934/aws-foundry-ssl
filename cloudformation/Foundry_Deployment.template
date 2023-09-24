@@ -475,6 +475,9 @@
 				"CorsConfiguration": {
 					"CorsRules": [
 						{
+							"AllowedOrigins": [
+								"*"
+							],
 							"AllowedHeaders": [
 								"*"
 							],
@@ -483,10 +486,8 @@
 								"POST",
 								"HEAD"
 							],
-							"MaxAge": "3000",
-							"AllowedOrigins": [
-								"*"
-							]
+							"ExposeHeaders": [],
+							"MaxAgeSeconds": "3000"
 						}
 					]
 				}
@@ -504,9 +505,9 @@
 					"Statement": [
 						{
 							"Sid": "PublicReadGetObject",
+							"Action": "s3:GetObject",
 							"Effect": "Allow",
 							"Principal": "*",
-							"Action": "s3:GetObject",
 							"Resource": {
 								"Fn::Sub": "arn:aws:s3:::${S3BucketName}/*"
 							}

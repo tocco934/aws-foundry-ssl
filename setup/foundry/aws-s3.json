@@ -1,0 +1,7 @@
+{
+  "region": "REGIONHERE",
+  "credentials": {
+    "accessKeyId": "ACCESSKEYIDHERE",
+    "secretAccessKey": "SECRETACCESSKEYHERE"
+  }
+}
