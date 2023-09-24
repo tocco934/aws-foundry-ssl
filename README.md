@@ -70,7 +70,7 @@ and then
 
 As long as you can get as far as the EC2 being spun up, then:
 
-- If you encounter a creation error, try again but set CloudFormation to _keep_ resources instead of _rollback_
+- If you encounter a creation error, try again but set CloudFormation to _preserve_ resources instead of _rollback_
 - Disable LetsEncrypt certificate requests (`UseLetsEncryptSSL` set to `False`), until you're happy that it's working to avoid running into the 5-a-week certificate limit
 - Add your IP to the Inbound rules of the created Security Group (if you didn't already during the CloudFormation config)
 - Grab the EC2's IP from the EC2 web console details
