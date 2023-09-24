@@ -23,7 +23,7 @@ You can also refer to the original repo's wiki, but the gist is:
 
 ### AWS Setup
 
-- Create up an SSH key in AWS EC2, under `EC2 / Network & Security / Key Pairs`
+- Create an SSH key in AWS EC2, under `EC2 / Network & Security / Key Pairs`
   - You only need to do this once. If you tear down and redeploy the stack you can reuse the same SSH key
   - However, consider rotating keys as a good security practise
   - Keep the downloaded private keypair (PEM or PPK) file safe, you'll need it for SCP / PuTTy / SSH access
