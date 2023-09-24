@@ -4,13 +4,16 @@ _Deploy Foundry VTT with SSL encryption in AWS using CloudFormation._
 
 This is a fork of the [**Foundry CF deploy script**](https://github.com/cat-box/aws-foundry-ssl) by Lupert and Cat.
 
-This version brings it up to date with some newer functionality and supports Foundry 11.
+**Main New Things**
 
-It's working, but still considered experimental.
+- Supports Foundry 11
+- Amazon Linux 2023 on EC2
+- Node 20.x
+- Newer more cost efficient / performant instance type support, including ARM64
 
 ## Installation
 
-_Note:_ You'll need some technical expertise to get this running. It's not necessarily click-ops, but it's close.
+_Note:_ You'll need some technical expertise to get this running. It's not quite click-ops, but it's close.
 
 You can also refer to the original repo's wiki, but the gist is:
 
@@ -19,28 +22,30 @@ You can also refer to the original repo's wiki, but the gist is:
 - Download the `NodeJS` installer for FoundryVTT from Foundry's website, upload it to Google Drive
   - Make the link publicly shared (anyone with the link can view)
   - Make note of the link
-  - Foundry 11.309 or greater is recommended due to fixing a major security flaw in the WebP decoder
+  - Foundry `11.309` or newer is recommended due to fixing a major security flaw in the WebP decoder
 
 ### AWS Setup
 
 - Create an SSH key in AWS EC2, under `EC2 / Network & Security / Key Pairs`
-  - You only need to do this once. If you tear down and redeploy the stack you can reuse the same SSH key
-  - However, consider rotating keys as a good security practise
-  - Keep the downloaded private keypair (PEM or PPK) file safe, you'll need it for SCP / PuTTy / SSH access
+  - You only need to do this once, _the first time_. If you tear down and redeploy the stack you can reuse the same SSH key
+  - That said, consider rotating keys (once every six months?) as a good security practise
+  - Keep the downloaded private keypair (PEM or PPK) file safe, you'll need it for SSH / SCP access to the EC2 server instance
 - Then go to CloudFormation and choose to Create a Stack with new resources
   - Leave `Template is Ready` selected
   - Choose `Upload a template file`
   - Upload the `/cloudformation/Foundry_Deployment.template` file from this project
   - Fill in and check _all_ the details. I've tried to provide sensible defaults. The ones you should pay _particular_ attention to are:
-    1. Add the Google Drive link for downloading Foundry
-    2. Set an admin user password (for IAM)
-    3. Enter your fully qualified domain eg. `mydomain.com`, do _not_ include any `www` or any other prefix
-    4. Enter your email address for LetsEncrypt
-    5. Choose the SSH keypair you set up for the EC2
-    6. (optional) Add your IP to be allowed incoming access via SSH eg. `123.45.67.89/32`. The `/32` is required and will scope the range to your IP only. You can manually set this up later in EC2 Security Groups if you need.
-    7. Choose an S3 bucket name for storing files. This must be globally unique and not use `.`
+    - Add the Google Drive link for downloading Foundry
+    - Set an admin user password (for IAM)
+    - Enter your fully qualified domain eg. `mydomain.com`, do _not_ include any `www` or any other prefix
+    - Enter your email address for LetsEncrypt
+    - Choose the SSH keypair you set up for the EC2
+    - (optional) Add your IP to be allowed incoming access via SSH eg. `123.45.67.89/32`. The `/32` (or other valid range) is required and will scope the range to your IP only. You can manually set this up later in EC2 Security Groups if you need.
+    - Choose an S3 bucket name for storing files
+    -   This must be _globally unique_ and not use `.`
+    -   If you're unsure, something like `foundry-mydomain-com` if you were going to host Foundry on `foundry.mydomain.com` would be a good recommendation
 
-It should be pretty automated from there. Again, just be careful of the LetsEncrypt deploy limits. If need be, set the LetsEncrypt testing option to `False` if you are deploying rapidly.
+It should be pretty automated from there. Again, just be careful of the LetsEncrypt deploy (5 certificate requests per week) limits. If need be, set the LetsEncrypt SSL testing option to `False` in the CloudFormation setup if you are debugging a failed stack deploy.
 
 ## Upgrading From a Previous Instance
 
@@ -65,6 +70,8 @@ In the `/aws-foundry-ssl/utils` folder, you can run:
 `sudo sh ./fix_folder_permissions.sh`
 and then
 `sudo sh ./restart_foundry.sh`
+
+You may also need to do this before you transfer files after adding your Foundry license as by default Foundry creates more restrictive folders.
 
 ## Debugging Failed CloudFormation
 
