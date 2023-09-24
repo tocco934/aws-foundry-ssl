@@ -12,9 +12,9 @@ sudo ln -s /opt/certbot/bin/certbot /usr/bin/certbot
 
 # Set up autorenew SSL certs
 sudo cp /aws-foundry-ssl/setup/certbot/certbot.sh /foundrycron/certbot.sh
-sudo cp /aws-foundry-ssl/setup/certbot/certbot.service /etc/systemd/system/
-sudo cp /aws-foundry-ssl/setup/certbot/certbot_start.timer /etc/systemd/system/
-sudo cp /aws-foundry-ssl/setup/certbot/certbot_renew.timer /etc/systemd/system/
+sudo cp /aws-foundry-ssl/setup/certbot/certbot.service /etc/systemd/system/certbot.service
+sudo cp /aws-foundry-ssl/setup/certbot/certbot_start.timer /etc/systemd/system/certbot_start.timer
+sudo cp /aws-foundry-ssl/setup/certbot/certbot_renew.timer /etc/systemd/system/certbot_renew.timer
 
 # Not sure what this does?
 sudo sed -i -e "s|location / {|include conf.d/drop;\n\n\tlocation / {|g" /etc/nginx/conf.d/foundryvtt.conf
