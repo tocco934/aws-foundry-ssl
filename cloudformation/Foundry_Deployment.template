@@ -486,7 +486,6 @@
 								"POST",
 								"HEAD"
 							],
-							"ExposeHeaders": [],
 							"MaxAgeSeconds": "3000"
 						}
 					]
