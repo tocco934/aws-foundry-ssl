@@ -8,7 +8,7 @@ cd /home/foundry/foundry-install
 if [[ `echo ${foundry_download_link}  | cut -d '/' -f3` == 'drive.google.com' ]]; then
     fileid=`echo ${foundry_download_link} | cut -d '/' -f6`
 
-    while (( FS_Retry < 4 )) ; do
+    while (( FS_Retry < 4 )); do
         sudo wget --quiet --save-cookies cookies.txt --keep-session-cookies --no-check-certificate "https://docs.google.com/uc?export=download&id=${fileid}" -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p' > confirm.txt
         sudo wget --load-cookies cookies.txt -O foundry.zip 'https://docs.google.com/uc?export=download&id='${fileid}'&confirm='$(<confirm.txt) && rm -rf cookies.txt confirm.txt
         filesize=$(stat -c%s "./foundry.zip")
