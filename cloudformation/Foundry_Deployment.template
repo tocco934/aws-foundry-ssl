@@ -700,7 +700,7 @@
 								"cwd": "/"
 							},
 							"C_Start_Install": {
-								"command": "sudo bash /aws-foundry-ssl/scripts/install.sh",
+								"command": "sudo bash /aws-foundry-ssl/setup/install.sh",
 								"cwd": "/"
 							}
 						}
