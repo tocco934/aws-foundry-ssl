@@ -10,7 +10,7 @@ set -x
 
 # Install foundry
 echo "======= INSTALLING DEPENDENCIES ======="
-sudo dnf install https://rpm.nodesource.com/pub_18.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y
+sudo dnf install https://rpm.nodesource.com/pub_20.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y
 sudo dnf install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1
 sudo dnf install -y openssl-devel
 sudo dnf install -y amazon-cloudwatch-agent
