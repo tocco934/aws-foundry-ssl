@@ -67,11 +67,11 @@ Downloading the `/foundrydata` folder from once EC2 in anticipation of uploading
 2. Restart `foundry`
 
 In the `/aws-foundry-ssl/utils` folder, you can run:
-`sudo sh ./fix_folder_permissions.sh`
-and then
+
+`sudo sh ./fix_folder_permissions.sh`, and then
 `sudo sh ./restart_foundry.sh`
 
-You may also need to do this before you transfer files after adding your Foundry license as by default Foundry creates more restrictive folders.
+You may also need to run just the `fix_folder_permissions` script _before_ you transfer files, after adding your Foundry license, as by default Foundry creates more restrictive folders.
 
 ## Debugging Failed CloudFormation
 
