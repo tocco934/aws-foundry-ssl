@@ -42,8 +42,8 @@ You can also refer to the original repo's wiki, but the gist is:
     - Choose the SSH keypair you set up for the EC2
     - (optional) Add your IP to be allowed incoming access via SSH eg. `123.45.67.89/32`. The `/32` (or other valid range) is required and will scope the range to your IP only. You can manually set this up later in EC2 Security Groups if you need.
     - Choose an S3 bucket name for storing files
-    -   This must be _globally unique_ and not use `.`
-    -   If you're unsure, something like `foundry-mydomain-com` if you were going to host Foundry on `foundry.mydomain.com` would be a good recommendation
+      - This must be _globally unique_ and not use `.`
+      - If you're unsure, something like `foundry-mydomain-com` if you were going to host Foundry on `foundry.mydomain.com` would be a good recommendation
 
 It should be pretty automated from there. Again, just be careful of the LetsEncrypt deploy (5 certificate requests per week) limits. If need be, set the LetsEncrypt SSL testing option to `False` in the CloudFormation setup if you are debugging a failed stack deploy.
 
