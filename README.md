@@ -61,7 +61,7 @@ Your worlds should be okay to bring over, and it should prompt to upgrade them t
 
 ### Transferring Worlds and Data
 
-Downloading the `/foundrydata` folder from once EC2 in anticipation of uploading it to another should suffice. However, if you are using SCP you'll need to do two things:
+Downloading the `/foundrydata` folder from one EC2 in anticipation of uploading it to another should suffice. However, if you are using SCP you'll need to do two things:
 
 1. Set permissions back to `foundry`
 2. Restart `foundry`
@@ -71,7 +71,7 @@ In the `/aws-foundry-ssl/utils` folder, you can run:
 `sudo sh ./fix_folder_permissions.sh`, and then
 `sudo sh ./restart_foundry.sh`
 
-You may also need to run just the `fix_folder_permissions` script _before_ you transfer files, after adding your Foundry license, as by default Foundry creates more restrictive folders.
+You may also need to run just the `fix_folder_permissions` script after adding your Foundry license, _but before_ you transfer files. By default Foundry creates more restrictive folder permissions (this may be fixable by optimistically creating them first with the install script, would need to look into this).
 
 ## Debugging Failed CloudFormation
 
