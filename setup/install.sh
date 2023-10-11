@@ -9,40 +9,40 @@ exec >> /tmp/foundry-setup.log 2>&1
 set -x
 
 # Install foundry
-echo "======= INSTALLING DEPENDENCIES ======="
+echo "===== 1. INSTALLING DEPENDENCIES ====="
 sudo dnf install https://rpm.nodesource.com/pub_20.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y
 sudo dnf install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1
 sudo dnf install -y openssl-devel
 sudo dnf install -y amazon-cloudwatch-agent
 
 # Install foundry
-echo "======= INSTALLING FOUNDRY ======="
+echo "===== 2. INSTALLING FOUNDRY ====="
 source /aws-foundry-ssl/setup/foundry.sh
 
 # Install nginx
-echo "======= INSTALLING NGINX ======="
+echo "===== 3. INSTALLING NGINX ====="
 source /aws-foundry-ssl/setup/nginx.sh
 
 # Amazon Cloudwatch logs and domain registrar and
-echo "===== INSTALLING AWS CLOUDWATCH AND HOSTED ZONE SERVICES ====="
+echo "===== 4. INSTALLING AWS CLOUDWATCH AND HOSTED ZONE SERVICES ====="
 source /aws-foundry-ssl/setup/aws_cloudwatch_config.sh
 source /aws-foundry-ssl/setup/aws_hosted_zone_id.sh
 
 # Set up SSL certificates with LetsEncrypt
-echo "======= INSTALLING LETSENCRYPT CERTBOT ======="
+echo "===== 5. INSTALLING LETSENCRYPT CERTBOT ====="
 source /aws-foundry-ssl/setup/certbot.sh
 
 # Restart Foundry so aws-s3.json is fully loaded
-echo "===== RESTARTING FOUNDRY ====="
+echo "===== 6. RESTARTING FOUNDRY ====="
 sudo systemctl restart foundry
 
 # Clean up install files (Comment out during testing)
-echo "===== CLEANUP AND USER PERMISSIONS ====="
+echo "===== 7. CLEANUP AND USER PERMISSIONS ====="
 sudo usermod -a -G foundry ec2-user
 sudo chown ec2-user -R /aws-foundry-ssl
 sudo chmod 700 /tmp/foundry-setup.log
 sudo rm /foundryssl/variables_tmp.sh
-# sudo rm -r /aws-foundry-ssl
+# sudo rm -r /aws-foundry-ssl # Only if one really cared to
 
-echo "===== DONE ====="
+echo "===== 8. DONE ====="
 echo "Finished setting up Foundry!"

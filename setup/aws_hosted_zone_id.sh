@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [ -z "${fqdn}" ]; then
-    echo "Variable \$fqdn is empty"
+if [[ -z "${fqdn}" ]]; then
+    echo "Variable \$fqdn is empty, cannot update AWS without a fully qualified domain name."
     exit 1
 fi
 

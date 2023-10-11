@@ -19,7 +19,7 @@ if [[ `echo ${foundry_download_link}  | cut -d '/' -f3` == 'drive.google.com' ]]
             break
         else
             echo "Filesize looking too small. Retrying..."
-            ((FS_Retry++))
+            (( FS_Retry++ ))
         fi
     done
 else
@@ -44,8 +44,8 @@ sudo systemctl enable --now foundry
 # Configure foundry aws json file
 F_DIR='/foundrydata/Config/'
 echo "Start time: $(date +%s)"
-while (( Edit_Retry < 45 )) ; do
-    if [ -d $F_DIR ]; then
+while (( Edit_Retry < 45 )); do
+    if [[ -d $F_DIR ]]; then
         echo "Directory found time: $(date +%s)"
         sudo cp /aws-foundry-ssl/setup/foundry/options.json /foundrydata/Config/options.json
         sudo cp /aws-foundry-ssl/setup/foundry/aws-s3.json /foundrydata/Config/aws-s3.json
@@ -53,10 +53,13 @@ while (( Edit_Retry < 45 )) ; do
         sudo sed -i "s|SECRETACCESSKEYHERE|${secret_access_key}|g" /foundrydata/Config/aws-s3.json
         sudo sed -i "s|REGIONHERE|${region}|g" /foundrydata/Config/aws-s3.json
         sudo sed -i 's|"awsConfig":.*|"awsConfig": "/foundrydata/Config/aws-s3.json",|g' /foundrydata/Config/options.json
+
+        # See if this fixes Foundry resetting more restrictive permissions by creating it ourselves
+        sudo mkdir /foundrydata/Data
         break
     else
         echo  echo "Directory not found time: $(date +%s)"
-        ((Edit_Retry++))
+        (( Edit_Retry++ ))
         sleep 1s
     fi
 done
