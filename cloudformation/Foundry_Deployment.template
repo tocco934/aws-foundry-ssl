@@ -682,7 +682,8 @@
 											"region = ",
 											{
 												"Ref": "AWS::Region"
-											}
+											},
+											"\n"
 										]
 									]
 								},
