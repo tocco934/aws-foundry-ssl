@@ -593,7 +593,7 @@
 						},
 						"files": {
 							"/tmp/foundry-setup.log": {
-								"content": "======= STARTING INSTALL =======\n"
+								"content": "===== STARTING INSTALL =====\n"
 							},
 							"/foundryssl/variables.sh": {
 								"content": {
