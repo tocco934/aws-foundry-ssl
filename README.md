@@ -22,7 +22,7 @@ You can also refer to the original repo's wiki, but the gist is:
 - Download the `NodeJS` installer for FoundryVTT from Foundry's website, upload it to Google Drive
   - Make the link publicly shared (anyone with the link can view)
   - Make note of the link
-  - Foundry `11.309` or newer is recommended due to fixing a major security flaw in the WebP decoder
+  - Foundry `11.313` or newer is recommended due to fixing a _second_ major security flaw in the WebP decoder
 
 ### AWS Setup
 
