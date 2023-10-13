@@ -1,29 +1,70 @@
 #!/bin/bash
 
-sudo mkdir -p /foundrycron /var/log/foundrycron /home/foundry/foundry-install /foundrydata
+# -------------------------------
+# Download and install FoundryVTT
+# -------------------------------
+
+sudo mkdir -p /foundrycron /var/log/foundrycron /home/foundry/foundry-install /foundrydata /foundrydata/Data
 
 # Download Foundry from Patreon link or Google Drive
 cd /home/foundry/foundry-install
 
-if [[ `echo ${foundry_download_link}  | cut -d '/' -f3` == 'drive.google.com' ]]; then
-    fileid=`echo ${foundry_download_link} | cut -d '/' -f6`
+rough_filesize=100000000
+
+if [[ `echo ${foundry_download_link} | cut -d '/' -f3` == 'drive.google.com' ]]; then
+    # Google Drive link
+    echo ">>> Downloading Foundry from a Google Drive link"
+
+    file_id=`echo ${foundry_download_link} | cut -d '/' -f6`
 
     while (( FS_Retry < 4 )); do
-        sudo wget --quiet --save-cookies cookies.txt --keep-session-cookies --no-check-certificate "https://docs.google.com/uc?export=download&id=${fileid}" -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p' > confirm.txt
-        sudo wget --load-cookies cookies.txt -O foundry.zip 'https://docs.google.com/uc?export=download&id='${fileid}'&confirm='$(<confirm.txt) && rm -rf cookies.txt confirm.txt
-        filesize=$(stat -c%s "./foundry.zip")
-        echo "Size of foundry.zip = $filesize bytes."
+        echo "Attempt ${FS_RETRY}..."
 
-        if (( filesize > 100000000 )); then
-            echo "Filesize seems about right! Proceeding..."
+        sudo wget --quiet --save-cookies cookies.txt --keep-session-cookies --no-check-certificate "https://docs.google.com/uc?export=download&id=${file_id}" -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p' > confirm.txt
+
+        sudo wget --load-cookies cookies.txt -O foundry.zip 'https://docs.google.com/uc?export=download&id='${file_id}'&confirm='$(<confirm.txt) && rm -rf cookies.txt confirm.txt
+
+        # Check if the file looks like it downloaded correctly (not a 404 page etc.)
+        filesize=$(stat -c%s "./foundry.zip")
+
+        echo "File size of foundry.zip is ${filesize} bytes."
+
+        if (( $filesize > $rough_filesize )); then
+            echo "File size seems about right! Proceeding..."
             break
         else
-            echo "Filesize looking too small. Retrying..."
+            echo "File size looking too small. Retrying..."
             (( FS_Retry++ ))
         fi
     done
 else
-    sudo wget -O foundry.zip "${foundry_download_link}"
+    # Foundry Patreon or other hosted link
+    echo ">>> Downloading Foundry from a Patreon or custom link"
+
+    while (( FS_Retry < 4 )); do
+        echo "Attempt ${FS_RETRY}..."
+
+        sudo wget -O foundry.zip "${foundry_download_link}"
+
+        filesize=$(stat -c%s "./foundry.zip")
+
+        echo "File size of foundry.zip is ${filesize} bytes."
+
+        # Check if the file looks like it downloaded correctly (not a 404 page etc.)
+        if (( $filesize > $rough_filesize )); then
+            echo "File size seems about right! Proceeding..."
+            break
+        else
+            echo "File size looking too small. Retrying..."
+            (( FS_Retry++ ))
+        fi
+    done
+fi
+
+# Final valid size check
+if [[ filesize < rough_filesize ]]; then
+    echo "Error: Downloaded foundry.zip doesn't seem big enough. Check the zip file and URL were correct."
+    exit 1
 fi
 
 unzip -u foundry.zip
@@ -44,6 +85,7 @@ sudo systemctl enable --now foundry
 # Configure foundry aws json file
 F_DIR='/foundrydata/Config/'
 echo "Start time: $(date +%s)"
+
 while (( Edit_Retry < 45 )); do
     if [[ -d $F_DIR ]]; then
         echo "Directory found time: $(date +%s)"
@@ -54,8 +96,6 @@ while (( Edit_Retry < 45 )); do
         sudo sed -i "s|REGIONHERE|${region}|g" /foundrydata/Config/aws-s3.json
         sudo sed -i 's|"awsConfig":.*|"awsConfig": "/foundrydata/Config/aws-s3.json",|g' /foundrydata/Config/options.json
 
-        # See if this fixes Foundry resetting more restrictive permissions by creating it ourselves
-        sudo mkdir /foundrydata/Data
         break
     else
         echo  echo "Directory not found time: $(date +%s)"

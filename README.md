@@ -118,6 +118,7 @@ Hopefully that gives you some insight in what's going on...
   - `m6`-class instances added for people who are made of moneybags, replacing the older `m4` instances
 - New: Send certbot's update logs to CloudWatch
 - New: Can choose to _not_ request LetsEncrypt SSL if you're trying to get it to deploy and you don't want to run into the certificate exhaustion. See https://letsencrypt.org/docs/duplicate-certificate-limit/
+- New: Amazon Linux 2023 kernel auto-updating
 
 ### Future Considerations
 

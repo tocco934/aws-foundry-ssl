@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# ---------------------------------------------------------------
+# Set up dynamic DNS and automatic AWS zone ID resolution updates
+# ---------------------------------------------------------------
+
 if [[ -z "${fqdn}" ]]; then
     echo "Variable \$fqdn is empty, cannot update AWS without a fully qualified domain name."
     exit 1

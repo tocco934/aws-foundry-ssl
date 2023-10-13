@@ -1,5 +1,5 @@
 [Unit]
-Description=Run certbot twice daily
+Description=Run certbot twice daily, with a 0-60min random delay added
 
 [Timer]
 Unit=certbot.service

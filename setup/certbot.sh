@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# ------------------------------------------------------
+# LetsEncrypt SSL (https) Certbot setup and auto-renewal
+# ------------------------------------------------------
+
 source /foundryssl/variables.sh
 
 # Install augeas

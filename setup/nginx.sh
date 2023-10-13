@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# -----------------------
+# Install nginx webserver
+# -----------------------
+
 if [[ ${webserver_bool} == "True" ]]; then
     foundry_file="foundryvtt_webserver.conf"
 else
