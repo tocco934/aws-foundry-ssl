@@ -30,10 +30,10 @@ You can also refer to the original repo's wiki, but the gist is:
 
 ### AWS Setup
 
-- Create an SSH key in AWS **EC2**, under `EC2 / Network & Security / Key Pairs`
+- Create an SSH key in **EC2**, under `EC2 / Network & Security / Key Pairs`
   - You only need to do this once, _the first time_. If you tear down and redeploy the stack you can reuse the same SSH key
   - That said, consider rotating keys regularly as a good security practise
-  - Keep the downloaded private keypair (PEM or PPK) file safe, you'll need it for SSH / SCP access to the EC2 server instance
+  - Keep the downloaded private keypair (PEM or PPK) file safe, you'll need it for [SSH / SCP access](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/connect-to-linux-instance.html) to the EC2 server instance
 - Then go to **CloudFormation** and choose to **Create a Stack** with new resources
   - Leave `Template is Ready` selected
   - Choose `Upload a template file`
@@ -41,13 +41,13 @@ You can also refer to the original repo's wiki, but the gist is:
   - Fill in and check _all_ the details. I've tried to provide sensible defaults. At a minimum if you leave the defaults, the ones that need to be filled in are:
     - Add the link for downloading Foundry
     - Set an admin user password (for IAM)
-    - Enter your fully qualified domain eg. `mydomain.com`. **Important:** Do _not_ include `www` or any other prefix
+    - Enter your fully qualified domain eg. `mydomain.com`
+      - **Important:** Do _not_ include `www` or any other prefix
     - Enter your email address for LetsEncrypt SSL (https) certificate issuance
     - Choose the SSH key pair you set up in the EC2 Key Pairs
     - _Optional:_ Add your IP to be allowed incoming access via SSH with a slash range eg. `123.45.67.89/32`. The `/xx` [subnet range](https://www.calculator.net/ip-subnet-calculator.html) on the end is required - if you aren't sure, use `/32`. You can always manually set or change this later in **EC2 Security Groups**
-    - Choose an S3 bucket name for storing files
-      - The name must be _globally unique_ and not use `.`
-      - If you're unsure, if you were going to host Foundry on `foundry.mydomain.com` then `foundry-mydomain-com` would be a good recommendation
+    - Choose an S3 bucket name for storing files - this name must be _globally unique_ across all S3 buckets that exist on AWS
+      - If you host Foundry on eg. `foundry.mydomain.com` then `foundry-mydomain-com` would be a good recommendation
 
 It should be pretty automated from there. Again, just be careful of the LetsEncrypt issuance limits. If need be, set the LetsEncrypt SSL testing option to `False` in the CloudFormation setup if you are debugging a failed stack deploy.
 
@@ -139,3 +139,4 @@ Hopefully that gives you some insight in what's going on...
 - Store LetsEncrypt PEM keys in AWS Secrets Manager and retrieve them instead of requesting new ones to work around the issuance limit (is that even possible / supported?)
 - Better ownership/permissions defaults?
 - Automatically select the `x86_64` or `arm64` image based on instance choice (even possible?)
+- Consider using SSH forwarding via SSM instead of key pair stuff, would need to look into this
