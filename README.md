@@ -13,7 +13,7 @@ This is a fork of the [**Foundry CF deploy script**](https://github.com/cat-box/
 
 ## Installation
 
-_Note:_ You'll need some technical expertise to get this running. It's not quite click-ops, but it's close.
+_Note:_ You'll need some technical expertise and basic familiarity with AWS to get this running. It's not quite click-ops, but it's close.
 
 You can also refer to the original repo's wiki, but the gist is:
 
@@ -22,30 +22,42 @@ You can also refer to the original repo's wiki, but the gist is:
 - Download the `NodeJS` installer for FoundryVTT from Foundry's website, upload it to Google Drive
   - Make the link publicly shared (anyone with the link can view)
   - Make note of the link
-  - Foundry `11.313` or newer is recommended due to fixing a _second_ major security flaw in the WebP decoder
+- or, have a FoundryVTT Patreon download link handy
+- or, upload it somewhere else it can be fetched publicly
+- I don't recommend using the time-limited links that you can get from the FoundryVTT site, but if that works for you, it's also an option
+
+**Note:** Foundry `11.313` or newer is recommended due to fixing a _second_ major security flaw in the Electron WebP decoder
 
 ### AWS Setup
 
-- Create an SSH key in AWS EC2, under `EC2 / Network & Security / Key Pairs`
+- Create an SSH key in AWS **EC2**, under `EC2 / Network & Security / Key Pairs`
   - You only need to do this once, _the first time_. If you tear down and redeploy the stack you can reuse the same SSH key
-  - That said, consider rotating keys (once every six months?) as a good security practise
+  - That said, consider rotating keys regularly as a good security practise
   - Keep the downloaded private keypair (PEM or PPK) file safe, you'll need it for SSH / SCP access to the EC2 server instance
-- Then go to CloudFormation and choose to Create a Stack with new resources
+- Then go to **CloudFormation** and choose to **Create a Stack** with new resources
   - Leave `Template is Ready` selected
   - Choose `Upload a template file`
   - Upload the `/cloudformation/Foundry_Deployment.template` file from this project
-  - Fill in and check _all_ the details. I've tried to provide sensible defaults. The ones you should pay _particular_ attention to are:
-    - Add the Google Drive link for downloading Foundry
+  - Fill in and check _all_ the details. I've tried to provide sensible defaults. At a minimum if you leave the defaults, the ones that need to be filled in are:
+    - Add the link for downloading Foundry
     - Set an admin user password (for IAM)
-    - Enter your fully qualified domain eg. `mydomain.com`, do _not_ include any `www` or any other prefix
-    - Enter your email address for LetsEncrypt
-    - Choose the SSH keypair you set up for the EC2
-    - (optional) Add your IP to be allowed incoming access via SSH eg. `123.45.67.89/32`. The `/32` (or other valid range) is required and will scope the range to your IP only. You can manually set this up later in EC2 Security Groups if you need.
+    - Enter your fully qualified domain eg. `mydomain.com`. **Important:** Do _not_ include `www` or any other prefix
+    - Enter your email address for LetsEncrypt SSL (https) certificate issuance
+    - Choose the SSH key pair you set up in the EC2 Key Pairs
+    - _Optional:_ Add your IP to be allowed incoming access via SSH with a slash range eg. `123.45.67.89/32`. The `/xx` [subnet range](https://www.calculator.net/ip-subnet-calculator.html) on the end is required - if you aren't sure, use `/32`. You can always manually set or change this later in **EC2 Security Groups**
     - Choose an S3 bucket name for storing files
-      - This must be _globally unique_ and not use `.`
-      - If you're unsure, something like `foundry-mydomain-com` if you were going to host Foundry on `foundry.mydomain.com` would be a good recommendation
+      - The name must be _globally unique_ and not use `.`
+      - If you're unsure, if you were going to host Foundry on `foundry.mydomain.com` then `foundry-mydomain-com` would be a good recommendation
 
-It should be pretty automated from there. Again, just be careful of the LetsEncrypt deploy (5 certificate requests per week) limits. If need be, set the LetsEncrypt SSL testing option to `False` in the CloudFormation setup if you are debugging a failed stack deploy.
+It should be pretty automated from there. Again, just be careful of the LetsEncrypt issuance limits. If need be, set the LetsEncrypt SSL testing option to `False` in the CloudFormation setup if you are debugging a failed stack deploy.
+
+If you run out of LetsEncrypt SSL requests, then you'll need to wait a week before trying again.
+
+## Security and Updates
+
+As of the `v1.1.0` release, I've enabled Linux auto-patching by default. A utility script also exists to help you manage this if you want to disable or re-enable or run it.
+
+It's also recommended to SSH into the instance and run `sudo dnf upgrade` every so often to make sure your packages are up to date with the latest fixes and security releases.
 
 ## Upgrading From a Previous Instance
 
@@ -71,7 +83,7 @@ In the `/aws-foundry-ssl/utils` folder, you can run:
 `sudo sh ./fix_folder_permissions.sh`, and then
 `sudo sh ./restart_foundry.sh`
 
-You may also need to run just the `fix_folder_permissions` script after adding your Foundry license, _but before_ you transfer files. By default Foundry creates more restrictive folder permissions (this may be fixable by optimistically creating them first with the install script, would need to look into this).
+If you get permissions errors, you may also need to run just the `./fix_folder_permissions.sh` script after adding your Foundry license, _but before_ you transfer files. By default Foundry creates more restrictive folder permissions.
 
 ## Debugging Failed CloudFormation
 
@@ -123,7 +135,6 @@ Hopefully that gives you some insight in what's going on...
 ### Future Considerations
 
 - Improve CloudWatch logs (?)
-- Add upgrade scripts eg. for NodeJS versions
 - Add script to facilitate transfer between two EC2s?
 - Store LetsEncrypt PEM keys in AWS Secrets Manager and retrieve them instead of requesting new ones to work around the issuance limit (is that even possible / supported?)
 - Better ownership/permissions defaults?
