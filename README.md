@@ -1,6 +1,4 @@
-# AWS Foundry VTT Deployment with SSL Encryption
-
-_Deploy Foundry VTT with SSL encryption in AWS using CloudFormation._
+# AWS Foundry VTT CloudFormation Deployment with SSL Encryption
 
 This is a fork of the [**Foundry CF deploy script**](https://github.com/cat-box/aws-foundry-ssl) by Lupert and Cat.
 
@@ -17,16 +15,17 @@ _Note:_ You'll need some technical expertise and basic familiarity with AWS to g
 
 You can also refer to the original repo's wiki, but the gist is:
 
-### Foundry Download
+### Foundry VTT Download
 
-- Download the `NodeJS` installer for FoundryVTT from Foundry's website, upload it to Google Drive
+1. Download the `NodeJS` installer for Foundry VTT from the Foundry VTT website, upload it to Google Drive
   - Make the link publicly shared (anyone with the link can view)
-  - Make note of the link
-- or, have a FoundryVTT Patreon download link handy
-- or, upload it somewhere else it can be fetched publicly
-- I don't recommend using the time-limited links that you can get from the FoundryVTT site, but if that works for you, it's also an option
+  - Make note of the link, or
+2. have a Foundry VTT Patreon download link handy, or
+3. upload it somewhere else it can be fetched publicly
 
-**Note:** Foundry `11.313` or newer is recommended due to fixing a _second_ major security flaw in the Electron WebP decoder
+It's not recommended to use the time-limited links that you can get from the Foundry VTT site, but if that works for you, it's also an option.
+
+**Note:** Foundry `11.313` or newer is recommended due to Electron fixing a _second_ major security flaw in the WebP decoder.
 
 ### AWS Setup
 
@@ -41,21 +40,21 @@ You can also refer to the original repo's wiki, but the gist is:
   - Fill in and check _all_ the details. I've tried to provide sensible defaults. At a minimum if you leave the defaults, the ones that need to be filled in are:
     - Add the link for downloading Foundry
     - Set an admin user password (for IAM)
-    - Enter your fully qualified domain eg. `mydomain.com`
-      - **Important:** Do _not_ include `www` or any other prefix
+    - Enter your domain name and TLD eg. `mydomain.com`
+      - **Important:** Do _not_ include `www` or any other sub-domain prefix
     - Enter your email address for LetsEncrypt SSL (https) certificate issuance
     - Choose the SSH key pair you set up in the EC2 Key Pairs
     - _Optional:_ Add your IP to be allowed incoming access via SSH with a slash range eg. `123.45.67.89/32`. The `/xx` [subnet range](https://www.calculator.net/ip-subnet-calculator.html) on the end is required - if you aren't sure, use `/32`. You can always manually set or change this later in **EC2 Security Groups**
     - Choose an S3 bucket name for storing files - this name must be _globally unique_ across all S3 buckets that exist on AWS
       - If you host Foundry on eg. `foundry.mydomain.com` then `foundry-mydomain-com` would be a good recommendation
 
-It should be pretty automated from there. Again, just be careful of the LetsEncrypt issuance limits. If need be, set the LetsEncrypt SSL testing option to `False` in the CloudFormation setup if you are debugging a failed stack deploy.
+It should be pretty automated from there. Again, just be careful of the LetsEncrypt issuance limits.
 
-If you run out of LetsEncrypt SSL requests, then you'll need to wait a week before trying again.
+If need be, set the LetsEncrypt SSL testing option to `False` in the CloudFormation setup if you are debugging a failed stack deploy. Should you run out of LetsEncrypt SSL requests, then you'll need to wait a week before trying again.
 
 ## Security and Updates
 
-As of the `v1.1.0` release, I've enabled Linux auto-patching by default. A utility script also exists to help you manage this if you want to disable or re-enable or run it.
+As of the `v1.1.0` release, Linux auto-patching is enabled by default. A utility script also exists to help you manage this if you want to disable or re-enable or run it.
 
 It's also recommended to SSH into the instance and run `sudo dnf upgrade` every so often to make sure your packages are up to date with the latest fixes and security releases.
 
@@ -67,33 +66,33 @@ Many plugins need to be updated etc. in addition to the base hardware and softwa
 
 You could upgrade it in-place on an older stack, but that's beyond the scope of this project.
 
-I recommend that you reinstall the _add-ons_ you were using manually one-by-one, as many of the add-ons from Foundry 10 have been updated to Foundry 11, and you'll want to make sure dependencies are all in place. Many add-ons have also changed ownership, and will need to be pointed to a new source address.
+It's recommended that you reinstall the _add-ons_ you were using manually one-by-one. Many of the add-ons from Foundry 10 have been updated to Foundry 11, and you'll want to make sure dependencies are all in place. Many add-ons have also changed ownership, and will need to be pointed to a new source address. Finally, some add-ons are not compatible with Foundry 11.
 
-Your worlds should be okay to bring over, and it should prompt to upgrade them to Foundry's new internal format.
+Your worlds should be okay to bring over, and it should prompt you to upgrade them to Foundry's new internal storage format.
 
 ### Transferring Worlds and Data
 
-Downloading the `/foundrydata` folder from one EC2 in anticipation of uploading it to another should suffice. However, if you are using SCP you'll need to do two things:
+Downloading the `/foundrydata` folder from one EC2 in anticipation of uploading it to another should suffice. If you're using SCP you'll need to do two things:
 
 1. Set permissions back to `foundry`
-2. Restart `foundry`
+2. Restart the `foundry` service
 
 In the `/aws-foundry-ssl/utils` folder, you can run:
 
 `sudo sh ./fix_folder_permissions.sh`, and then
 `sudo sh ./restart_foundry.sh`
 
-If you get permissions errors, you may also need to run just the `./fix_folder_permissions.sh` script after adding your Foundry license, _but before_ you transfer files. By default Foundry creates more restrictive folder permissions.
+If you get permissions errors, you may also need to run just the `./fix_folder_permissions.sh` script after adding your Foundry license, but _before_ you transfer files. By default Foundry creates more restrictive folder permissions.
 
 ## Debugging Failed CloudFormation
 
 As long as you can get as far as the EC2 being spun up, then:
 
-- If you encounter a creation error, try again but set CloudFormation to _preserve_ resources instead of _rollback_
-- Disable LetsEncrypt certificate requests (`UseLetsEncryptSSL` set to `False`), until you're happy that it's working to avoid running into the 5-a-week certificate limit
+- If you encounter a creation error, try setting CloudFormation to _preserve_ resources instead of _rollback_ so you can check the troublesome resources
+- Disable LetsEncrypt certificate requests (`UseLetsEncryptSSL` set to `False`), until you're happy that it's working to avoid running into the certificate issuance limit
 - Add your IP to the Inbound rules of the created Security Group (if you didn't already during the CloudFormation config)
 - Grab the EC2's IP from the EC2 web console details
-- Open up PuTTy or similar, connect to the IP using the SSH keypair (I'd recommend to only accept the key _once_, rather than accept _always_, as you may end up destroying and recreating, which means this IP shouldn't be treated as permanent)
+- Open up PuTTy or similar, connect to the IP using the SSH keypair (I'd recommend to only accept the key _once_, rather than accept _always_, as you may end up destroying this instance)
 - Check the setup logs
   - `sudo tail -f /tmp/foundry-setup.log` if setup scripts are still running, or
   - `sudo cat /tmp/foundry-setup.log | less` if setup scripts have finished running
@@ -129,7 +128,7 @@ Hopefully that gives you some insight in what's going on...
   - I found Foundry would _just_ run on a `.micro` instance, but it'd also run out of memory and cause the EC2 to freak out. This resulted in CPU usage (and hosting costs) to spiral out of control, so I removed that size
   - `m6`-class instances added for people who are made of moneybags, replacing the older `m4` instances
 - New: Send certbot's update logs to CloudWatch
-- New: Can choose to _not_ request LetsEncrypt SSL if you're trying to get it to deploy and you don't want to run into the certificate exhaustion. See https://letsencrypt.org/docs/duplicate-certificate-limit/
+- New: Can choose to _not_ request LetsEncrypt SSL if you're trying to get it to deploy and you don't want to run into the certificate issuance limit. See https://letsencrypt.org/docs/duplicate-certificate-limit/
 - New: Amazon Linux 2023 kernel auto-updating
 
 ### Future Considerations
@@ -139,4 +138,5 @@ Hopefully that gives you some insight in what's going on...
 - Store LetsEncrypt PEM keys in AWS Secrets Manager and retrieve them instead of requesting new ones to work around the issuance limit (is that even possible / supported?)
 - Better ownership/permissions defaults?
 - Automatically select the `x86_64` or `arm64` image based on instance choice (even possible?)
-- Consider using SSH forwarding via SSM instead of key pair stuff, would need to look into this
+- Consider using SSH forwarding via SSM or EC2 Instance Connect instead of key pair stuff, would need to look into this
+- IPv6 support (AWS will soon start charging for IPv4 address assignments)
