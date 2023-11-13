@@ -10,34 +10,40 @@ This is a fork of the [**Foundry CF deploy script**](https://github.com/cat-box/
 - Newer more cost efficient / performant instance type support, including ARM64
 - Experimental IPv6 support
 
+Note this is just something being done in my spare time and for fun/interest. Keep that in mind.
+
 ## Installation
 
-_Note:_ You'll need some technical expertise and basic familiarity with AWS to get this running. It's not quite click-ops, but it's close.
+You'll need some technical expertise and basic familiarity with AWS to get this running. It's not quite click-ops, but it's close. Some parts do require some click-ops once.
 
 You can also refer to the original repo's wiki, but the gist is:
 
 ### Foundry VTT Download
 
-1. Download the `NodeJS` installer for Foundry VTT from the Foundry VTT website, upload it to Google Drive
+Download the `NodeJS` installer for Foundry VTT from the Foundry VTT website. Then either:
 
-- Make the link publicly shared (anyone with the link can view)
-- Make note of the link, or
+- Upload it to Google Drive, make the link publicly shared (anyone with the link can view), or
+- Have a Foundry VTT Patreon download link handy, or
+- Upload it somewhere else it can be fetched publicly
 
-2. have a Foundry VTT Patreon download link handy, or
-3. upload it somewhere else it can be fetched publicly
-
-It's not recommended to use the time-limited links that you can get from the Foundry VTT site, but if that works for you, it's also an option.
+It's _not recommended_ to use the time-limited links that you can get from the Foundry VTT site, but if that works for you, it's also an option.
 
 **Note:** Foundry `11.313` or newer is recommended due to Electron fixing a _second_ major security flaw in the WebP decoder.
 
-### AWS Setup
+### AWS Pre-setup
 
-- This script currently relies on your `default` VPC, which should be set up automatically when you first create your acccount. If you have a custom VPC, you'll need to edit this script to use it
+This only needs to be done _once_, no matter how many times you redeploy.
+
 - Create an SSH key in **EC2**, under `EC2 / Network & Security / Key Pairs`
   - You only need to do this once, _the first time_. If you tear down and redeploy the stack you can reuse the same SSH key
   - That said, consider rotating keys regularly as a good security practise
   - Keep the downloaded private keypair (PEM or PPK) file safe, you'll need it for [SSH / SCP access](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/connect-to-linux-instance.html) to the EC2 server instance
-- Then go to **CloudFormation** and choose to **Create a Stack** with new resources
+
+### AWS Setup
+
+**Note:** This script currently relies on your `default` VPC, which should be set up automatically when you first create your acccount. If you have a custom VPC, it's not (yet) supported.
+
+- Go to **CloudFormation** and choose to **Create a Stack** with new resources
   - Leave `Template is Ready` selected
   - Choose `Upload a template file`
   - Upload the `/cloudformation/Foundry_Deployment.template` file from this project
@@ -48,13 +54,13 @@ It's not recommended to use the time-limited links that you can get from the Fou
       - **Important:** Do _not_ include `www` or any other sub-domain prefix
     - Enter your email address for LetsEncrypt TLS (https) certificate issuance
     - Choose the SSH key pair you set up in the EC2 Key Pairs
-    - _Optional:_ Add your IP to be allowed incoming access via SSH with a slash range eg. `123.45.67.89/32`. The `/xx` [subnet range](https://www.calculator.net/ip-subnet-calculator.html) on the end is required - if you aren't sure, use `/32`. You can always manually set or change this later in **EC2 Security Groups**
+    - _Optional:_ Add your IP to be allowed incoming access via SSH with a slash range eg. `123.45.67.89/32`. The `/xx` [subnet range](https://www.calculator.net/ip-subnet-calculator.html) on the end is required - if you aren't sure, use `/32` for IPv4 or `/128` for IPv6. You can always manually set or change this later in **EC2 Security Groups**
     - Choose an S3 bucket name for storing files - this name must be _globally unique_ across all S3 buckets that exist on AWS
-      - If you host Foundry on eg. `foundry.mydomain.com` then `foundry-mydomain-com` would be a good recommendation
+      - If you host Foundry on eg. `foundry.mydomain.com` then `foundry-mydomain-com` is a good recommendation
 
-It should be pretty automated from there. Again, just be careful of the LetsEncrypt issuance limits.
+It should be pretty automated from there. Again, just be careful of the LetsEncrypt TLS issuance limits.
 
-If need be, set the LetsEncrypt TLS testing option to `False` in the CloudFormation setup if you are debugging a failed stack deploy. Should you run out of LetsEncrypt TLS requests, then you'll need to wait a week before trying again.
+If need be, set the LetsEncrypt TLS testing option to `False` in the CloudFormation setup if you are debugging a failed stack deploy. Should you run out of LetsEncrypt TLS requests, you'll need to wait one week before trying again.
 
 ## Security and Updates
 
@@ -76,7 +82,9 @@ Your worlds should be okay to bring over, and it should prompt you to upgrade th
 
 ### Transferring Worlds and Data
 
-Downloading the `/foundrydata` folder from one EC2 in anticipation of uploading it to another should suffice. If you're using SCP you'll need to do two things:
+Downloading the `/foundrydata` folder from your old EC2 in anticipation of uploading it to another should suffice.
+
+If you're using SCP you'll need to do two things after uploading to your new instance:
 
 1. Set permissions back to `foundry`
 2. Restart the `foundry` service
@@ -90,7 +98,9 @@ If you get permissions errors, you may also need to run just the `./fix_folder_p
 
 ## IPv6 Support
 
-This is still a bit experimental as currently this script relies on your default VPC. If you haven't set your VPC to support IPv6, ideally you'll need to manually make the following changes first:
+This is still experimental as currently this script relies on your default VPC. The goal is that IPv6 uses http/2 and TLS (https) _only_, with insecure non-TLS (http) being only available over IPv4 for debugging. TLS (https) over IPv4 remains supported, of course.
+
+If you haven't configured your VPC to support IPv6, you'll need to manually make the following changes:
 
 - **VPC**: Add a new IPv6 CIDR (Amazon-provided)
 - **Subnets**
@@ -98,17 +108,19 @@ This is still a bit experimental as currently this script relies on your default
   - **Assign IPv6**: Choose a single subnet, then Edit subnet settings. Turn on `Enable auto-assign IPv6 address`. You likely also want to change `Hostname type` from `IP name` to `Resource name`. Also make this change for each of your subnets in the VPC
 - **Route Tables**: Add a new route for `::/0`, pointed to your Internet Gateway (use the `0.0.0.0/0` entry for reference)
 
-### Domain AAAA Records
+Then deploy Foundry using this script. It should be assigned both an IPv4 and IPv6 address. However, the IPv6 address won't be routed until you manually configure its `AAAA` DNS record.
 
-Next, we need to add an AAAA record to the hosted zone.
+### Domain AAAA IPv6 Record
 
-Right now there's no (easy) way to get the IPv6 address of an EC2 instance in a CloudFormation script (see [this GitHub issue](https://github.com/aws-cloudformation/cloudformation-coverage-roadmap/issues/916) for the complete silence from Amazon). Thus there's no easy way to set the `AAAA` record using CloudFormation. Adding a whole Python lambda _just_ to get an IPv6 address, while impressive in execution, is a tremendous hack and not something I'd like to implement.
+After Foundry is deployed, you need to add an `AAAA` record to the hosted zone to enable IPv6 routing. Find the hosted zone in Route 53, then add a new `AAAA` record for Foundry, matching the `A` record/s. Specify the target as the EC2's IPv6 addresss.
 
-Once you enable IPv6, you'll also need to add the IPv6 `AAAA` records to your Route 53 zone/s for Foundry manually. Add a new AAAA record for eg. `foundry.mydomain.com` with the EC2's IPv6 address set.
+Right now there's no (easy) way to get the IPv6 address of an EC2 instance in a CloudFormation script (see [this GitHub issue](https://github.com/aws-cloudformation/cloudformation-coverage-roadmap/issues/916) for the complete silence from Amazon). Thus we can't automatically set the `AAAA` record using CloudFormation without hackery. Adding a whole Python lambda _just_ to get an EC2's IPv6 address, while very impressive in execution, is not something I'd like to implement.
+
+It may be that I end up removing the `A` and `AAAA` record settings in CloudFormation and rely on the upsert behaviour from the `systemd` timer's script to do it for us.
 
 ### Uplifting an Existing Deploy
 
-If you've already deployed Foundry, edit the EC2 Security Group to add `::/0` for the HTTP, HTTPS, and custom IP ranges in the Inbound rules. Then check the EC2's Network settings and auto-assign an IPv6 IP to it.
+If you've already deployed Foundry, it's possible to uplift it to IPv6. After editing your subnet, also edit the EC2 Security Group's Incoming rules to add `::/0` for the HTTP, HTTPS, and custom IP ranges in the Inbound rules. Then check the EC2's Network settings and auto-assign an IPv6 address to it.
 
 ### IPv6 Only
 
