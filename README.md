@@ -1,4 +1,4 @@
-# AWS Foundry VTT CloudFormation Deployment with SSL Encryption
+# AWS Foundry VTT CloudFormation Deployment with TLS Encryption
 
 This is a fork of the [**Foundry CF deploy script**](https://github.com/cat-box/aws-foundry-ssl) by Lupert and Cat.
 
@@ -18,8 +18,10 @@ You can also refer to the original repo's wiki, but the gist is:
 ### Foundry VTT Download
 
 1. Download the `NodeJS` installer for Foundry VTT from the Foundry VTT website, upload it to Google Drive
-  - Make the link publicly shared (anyone with the link can view)
-  - Make note of the link, or
+
+- Make the link publicly shared (anyone with the link can view)
+- Make note of the link, or
+
 2. have a Foundry VTT Patreon download link handy, or
 3. upload it somewhere else it can be fetched publicly
 
@@ -42,7 +44,7 @@ It's not recommended to use the time-limited links that you can get from the Fou
     - Set an admin user password (for IAM)
     - Enter your domain name and TLD eg. `mydomain.com`
       - **Important:** Do _not_ include `www` or any other sub-domain prefix
-    - Enter your email address for LetsEncrypt SSL (https) certificate issuance
+    - Enter your email address for LetsEncrypt TLS (https) certificate issuance
     - Choose the SSH key pair you set up in the EC2 Key Pairs
     - _Optional:_ Add your IP to be allowed incoming access via SSH with a slash range eg. `123.45.67.89/32`. The `/xx` [subnet range](https://www.calculator.net/ip-subnet-calculator.html) on the end is required - if you aren't sure, use `/32`. You can always manually set or change this later in **EC2 Security Groups**
     - Choose an S3 bucket name for storing files - this name must be _globally unique_ across all S3 buckets that exist on AWS
@@ -50,7 +52,7 @@ It's not recommended to use the time-limited links that you can get from the Fou
 
 It should be pretty automated from there. Again, just be careful of the LetsEncrypt issuance limits.
 
-If need be, set the LetsEncrypt SSL testing option to `False` in the CloudFormation setup if you are debugging a failed stack deploy. Should you run out of LetsEncrypt SSL requests, then you'll need to wait a week before trying again.
+If need be, set the LetsEncrypt TLS testing option to `False` in the CloudFormation setup if you are debugging a failed stack deploy. Should you run out of LetsEncrypt TLS requests, then you'll need to wait a week before trying again.
 
 ## Security and Updates
 
@@ -89,7 +91,7 @@ If you get permissions errors, you may also need to run just the `./fix_folder_p
 As long as you can get as far as the EC2 being spun up, then:
 
 - If you encounter a creation error, try setting CloudFormation to _preserve_ resources instead of _rollback_ so you can check the troublesome resources
-- Disable LetsEncrypt certificate requests (`UseLetsEncryptSSL` set to `False`), until you're happy that it's working to avoid running into the certificate issuance limit
+- Disable LetsEncrypt certificate requests (`UseLetsEncryptTLS` set to `False`), until you're happy that it's working to avoid running into the certificate issuance limit
 - Add your IP to the Inbound rules of the created Security Group (if you didn't already during the CloudFormation config)
 - Grab the EC2's IP from the EC2 web console details
 - Open up PuTTy or similar, connect to the IP using the SSH keypair (I'd recommend to only accept the key _once_, rather than accept _always_, as you may end up destroying this instance)
@@ -111,7 +113,7 @@ Hopefully that gives you some insight in what's going on...
 - Fix: S3 bucket ACL permissions were updated for the stricter [default policy](https://aws.amazon.com/about-aws/whats-new/2022/12/amazon-s3-automatically-enable-block-public-access-disable-access-control-lists-buckets-april-2023/) as of circa April 2023
 - Fix: S3 permissions and configuration was changed in Foundry 11
 - Fix: New default AMI security seems to necessitate `sudo` in the install script
-- Fix: LetsEncrypt SSL certbot didn't work on initial startup
+- Fix: LetsEncrypt TLS certbot didn't work on initial startup
   - Please be aware of the 5-certificates-per-week maximum issuance in case of redeploying multiple times when setting up or if testing things
   - I had to learn a lot about systemd timers, in this case splitting certbot into two timers for the one service
   - Note that certbot _must_ be run after the domain is set up. I've allowed a 30s buffer, but if say CloudFormation takes longer to set up Route53 it may fail
@@ -128,7 +130,7 @@ Hopefully that gives you some insight in what's going on...
   - I found Foundry would _just_ run on a `.micro` instance, but it'd also run out of memory and cause the EC2 to freak out. This resulted in CPU usage (and hosting costs) to spiral out of control, so I removed that size
   - `m6`-class instances added for people who are made of moneybags, replacing the older `m4` instances
 - New: Send certbot's update logs to CloudWatch
-- New: Can choose to _not_ request LetsEncrypt SSL if you're trying to get it to deploy and you don't want to run into the certificate issuance limit. See https://letsencrypt.org/docs/duplicate-certificate-limit/
+- New: Can choose to _not_ request LetsEncrypt TLS if you're trying to get it to deploy and you don't want to run into the certificate issuance limit. See https://letsencrypt.org/docs/duplicate-certificate-limit/
 - New: Amazon Linux 2023 kernel auto-updating
 
 ### Future Considerations

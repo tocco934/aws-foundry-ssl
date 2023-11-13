@@ -24,12 +24,12 @@ if [[ -z "${fqdn}" ]]; then
 fi
 
 if [[ -d "/etc/letsencrypt/live/${subdomain}.${fqdn}" ]]; then
-    echo "Checking SSL certificate for renewal..."
+    echo "Checking TLS certificate for renewal..."
 
     # Certificate exists, we can check if it needs renewal
     certbot renew --nginx --no-random-sleep-on-renew --post-hook "systemctl restart nginx"
 else
-    echo "SSL certificate not found, attempting to set it up..."
+    echo "TLS certificate not found, attempting to set it up..."
 
     # Try to fetch the certificates
     certbot --agree-tos -n --nginx -d ${subdomain}.${fqdn} -m ${email} --no-eff-email

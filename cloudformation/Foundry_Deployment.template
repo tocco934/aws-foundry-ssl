@@ -1,6 +1,6 @@
 {
 	"AWSTemplateFormatVersion": "2010-09-09",
-	"Description": "Run FoundryVTT on EC2 with LetsEncrypt SSL support.",
+	"Description": "Run FoundryVTT on EC2 with LetsEncrypt TLS support.",
 	"Metadata": {
 		"AWS::CloudFormation::Interface": {
 			"ParameterGroups": [
@@ -16,7 +16,7 @@
 				},
 				{
 					"Label": {
-						"default": "Domain and SSL Configuration"
+						"default": "Domain Configuration"
 					},
 					"Parameters": [
 						"FullyQualifiedDomainName",
@@ -27,10 +27,10 @@
 				},
 				{
 					"Label": {
-						"default": "SSL Configuration"
+						"default": "TLS (HTTPS) Configuration"
 					},
 					"Parameters": [
-						"UseLetsEncryptSSL",
+						"UseLetsEncryptTLS",
 						"Email"
 					]
 				},
@@ -63,37 +63,37 @@
 	"Parameters": {
 		"FoundryDownloadLink": {
 			"Type": "String",
-			"Description": "Your personal link to download Foundry. Specify either a Patreon link, or a publicly shared Google Drive link.",
+			"Description": "Where to download Foundry. Can be a Patreon link, a publicly shared Google Drive link, or a custom hosted link. Timed Foundry links are possible but not recommended.",
 			"AllowedPattern" : ".+"
 		},
 		"AdminUserName": {
 			"Type": "String",
-			"Description": "Username to be used for the Foundry admin user.",
+			"Description": "Username for the Foundry IAM user.",
 			"AllowedPattern" : "[A-Za-z]+",
 			"Default": "FoundryAdmin"
 		},
 		"AdminUserPW": {
 			"Type": "String",
-			"Description": "Have a minimum of 8 characters and a maximum of 128 characters include a minimum of three of the following mix of character types: uppercase, lowercase, numbers, and symbols.",
-			"ConstraintDescription": "Have a minimum of 8 characters and a maximum of 128 characters include a minimum of three of the following mix of character types: uppercase, lowercase, numbers, and symbols.",
+			"Description": "Minimum of 8 characters, maximum of 128 characters. Includes at least one of each: uppercase letter, lowercase letter, number, symbol.",
+			"ConstraintDescription": "8 - 128 characters long. Includes at least one of each: uppercase letter, lowercase letter, number, symbol.",
 			"AllowedPattern" : ".{8,128}",
 			"NoEcho": "True"
 		},
 		"FullyQualifiedDomainName": {
 			"Type": "String",
-			"Description": "This is the name of the domain you are using eg. `mydomain.com`. Do NOT include subdomain qualifiers - no `www`!",
+			"Description": "Your domain name eg. `mydomain.com`. Do NOT include subdomains ie. no `www`!",
 			"AllowedPattern": "^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\\.[a-zA-Z]{2,})+$"
 		},
 		"SubdomainName": {
 			"Type": "String",
-			"Description": "Name for the final URL to access foundry. Must be all lowercase, no letters, no spaces, and no symbols. eg. `foundry` will become `foundry.mydomain.com`",
+			"Description": "Name for the Foundry subdomain. Must be all lowercase, no numbers, spaces, or symbols. eg. `foundry` will become `foundry.mydomain.com`",
 			"AllowedPattern": "^[a-z]+$",
-			"ConstraintDescription": "Must be all lowercase, no letters, no spaces, and no symbols.",
+			"ConstraintDescription": "Must be all lowercase, no numbers, spaces, or symbols.",
 			"Default": "foundry"
 		},
 		"WebServerBool": {
 			"Type": "String",
-			"Description": "Set this to true if you would like your instance to act as the primary web server for your base domain as well as host Foundry.",
+			"Description": "Set this to True if you want Foundry to also be accessible as your main domain.",
 			"AllowedValues": [
 				"True",
 				"False"
@@ -109,9 +109,9 @@
 			],
 			"Default": "True"
 		},
-		"UseLetsEncryptSSL": {
+		"UseLetsEncryptTLS": {
 			"Type": "String",
-			"Description": "Run the LetsEncrypt SSL script. Set to False if you're testing, otherwise leave it at True to use https/SSL.",
+			"Description": "Run the LetsEncrypt TLS script. Set to False if you're testing, otherwise leave it at True to use TLS (https).",
 			"AllowedValues": [
 				"True",
 				"False"
@@ -120,7 +120,7 @@
 		},
 		"Email": {
 			"Type": "String",
-			"Description": "A valid email address is required for LetsEncrypt SSL certificates.",
+			"Description": "A valid email address is required for LetsEncrypt TLS certificates.",
 			"MinLength": 1,
 			"ConstraintDescription": "Please enter a valid email address."
 		},
@@ -131,20 +131,24 @@
 		},
 		"InstanceType": {
 			"Type": "String",
-			"Description": "EC2 server instance type. Pick a size based on estimated use and cost - if unsure, use `t4g.small` for light performance / cost saving. `m6`-class instances are fast but very expensive and probably not recommended unless you know you need them. See https://aws.amazon.com/ec2/pricing/on-demand/ for info.",
+			"Description": "EC2 server instance type. Factor in your use and cost - if unsure, use `t4g.small` for light performance / good cost saving. `m6`-class instances are fast but very expensive and probably not recommended unless you know you need them. See https://aws.amazon.com/ec2/pricing/on-demand/ for info.",
 			"AllowedValues": [
 				"t3a.small",
 				"t3a.medium",
+				"t3a.large",
+				"m6a.large",
+				"m6a.xlarge",
 				"t4g.small",
 				"t4g.medium",
-				"m6a.large",
-				"m6a.xlarge"
+				"t4g.large",
+				"m6g.large",
+				"m6g.xlarge"
 			],
 			"Default": "t4g.small"
 		},
 		"AMI": {
 			"Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
-			"Description": "Managed AMI (operating system) image for the EC2. If you're using a `t4g` instance, leave it as 'arm64'. `t3` and `m6` instances MUST change this to `x86_64`.",
+			"Description": "Managed AMI (operating system) image for the EC2. If you're using a `g` class instance, leave it as 'arm64'. `a` class instances MUST change this to `x86_64`.",
 			"AllowedValues": [
 				"/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-arm64",
 				"/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64"
@@ -153,7 +157,7 @@
 		},
 		"UseFixedIP": {
 			"Type": "String",
-			"Description": "Allows you to have a dedicated public IP for your instance. This prevents the IP from changing everytime you shutdown the instance. EIPs have a conditional cost. If an EIP is in use, it is free. If the EIP is not in use a minimal cost is applied.",
+			"Description": "Allows you to have a dedicated public IP for your instance. This prevents the IP from changing everytime you shutdown the instance. EIPs are an additional cost. Note from 2024 AWS will charge for all IPv4 address use.",
 			"AllowedValues": [
 				"True",
 				"False"
@@ -162,13 +166,13 @@
 		},
 		"SshAccessIP": {
 			"Type": "String",
-			"Description": "Will allow TCP port 22 (SSH) Inbound access for the given IP range. You MUST enter a range. For a single IP put /32 at the end. You likely want to use your public IP (https://www.whatsmyip.org/). Example of a valid entry: 123.45.67.89/32. If you leave this blank, no SSH rule will be configured. You can also set this manually later in the EC2 instance's Security Group",
+			"Description": "Will allow TCP port 22 (SSH) Inbound access for the given IP range. You MUST enter a CIDR range. For a single IP use /32. You likely want to use your public IP (https://www.whatsmyip.org/). eg: 123.45.67.89/32. If you leave this blank, you can set it manually later in the EC2 instance's Security Group.",
 			"Default": "",
 			"ConstraintDescription": "Must be a valid IP/CIDR range."
 		},
 		"UseExistingS3Bucket": {
 			"Type": "String",
-			"Description": "If you have an S3 bucket already set up for Foundry, set this option to True. The S3 bucket must have a public access policy set. If you don't have a bucket set up, one will be created for you with the name specified next.",
+			"Description": "If you have an existing S3 bucket set up for Foundry, set this option to True. The bucket must have a public access policy set. If you don't have a bucket set up, one will be created for you with the name specified next.",
 			"AllowedValues": [
 				"True",
 				"False"
@@ -177,13 +181,13 @@
 		},
 		"S3BucketName": {
 			"Type": "String",
-			"Description": "Name for S3 bucket that will be created or used. This must be globally unique across all of AWS, so be a little creative. Must be all lowercase letters or numbers, no spaces, and no symbols expect dash (-).",
-			"ConstraintDescription": "This must be globally unique across all of AWS, so be a little creative. Must be all lowercase letters or numbers, no spaces, and no symbols expect dash (-).",
+			"Description": "Name for S3 bucket that will be created or used. This must be globally unique across all of AWS. Must be all lowercase letters or numbers, no spaces, and no symbols expect dash (-). A good bucket name could be eg. foundry-mydomain-com",
+			"ConstraintDescription": "Must be all lowercase letters, numbers or a dash (-). No spaces or other symbols.",
 			"AllowedPattern": "^[a-z|0-9]+([-|a-z|0-9]+)*[a-z|0-9]$"
 		},
 		"TakeSnapshots": {
 			"Type": "String",
-			"Description": "Select True if you want to take snapshots of your instance. This is recommended but comes with a minimal cost to store the snapshots. This will retain 5 snapshots by default. See https://aws.amazon.com/ebs/pricing/",
+			"Description": "Select True if you want to take backup snapshots of your instance. This is recommended but has a (minimal) cost to store the snapshots. Five rolling snapshots are retained by default. See https://aws.amazon.com/ebs/pricing/",
 			"AllowedValues": [
 				"True",
 				"False"
@@ -191,7 +195,7 @@
 			"Default": "False"
 		},
 		"SnapshotFrequency": {
-			"Description": "If taking instance snapshots, how often you want to take snapshots.",
+			"Description": "If taking instance snapshots is set to True, how often you want to take snapshots.",
 			"Type": "String",
 			"Default": "Weekly",
 			"AllowedValues": [
@@ -630,7 +634,7 @@
 											"\n",
 											"enable_letsencrypt=",
 											{
-												"Ref": "UseLetsEncryptSSL"
+												"Ref": "UseLetsEncryptTLS"
 											},
 											"\n"
 										]

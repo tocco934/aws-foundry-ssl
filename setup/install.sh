@@ -29,7 +29,7 @@ source /aws-foundry-ssl/setup/aws_cloudwatch_config.sh
 source /aws-foundry-ssl/setup/aws_hosted_zone_id.sh
 source /aws-foundry-ssl/setup/aws_linux_updates.sh
 
-# Set up SSL certificates with LetsEncrypt
+# Set up TLS certificates with LetsEncrypt
 echo "===== 5. INSTALLING LETSENCRYPT CERTBOT ====="
 source /aws-foundry-ssl/setup/certbot.sh
 

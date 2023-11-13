@@ -1,5 +1,5 @@
 [Unit]
-Description=Certbot SSL Renewal
+Description=Certbot TLS Renewal
 Documentation=https://certbot.eff.org/docs
 
 [Service]
