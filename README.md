@@ -2,12 +2,13 @@
 
 This is a fork of the [**Foundry CF deploy script**](https://github.com/cat-box/aws-foundry-ssl) by Lupert and Cat.
 
-**Main New Things**
+**New Things**
 
 - Supports Foundry 11
 - Amazon Linux 2023 on EC2
 - Node 20.x
 - Newer more cost efficient / performant instance type support, including ARM64
+- Experimental IPv6 support
 
 ## Installation
 
@@ -87,23 +88,31 @@ In the `/aws-foundry-ssl/utils` folder, you can run:
 
 If you get permissions errors, you may also need to run just the `./fix_folder_permissions.sh` script after adding your Foundry license, but _before_ you transfer files. By default Foundry creates more restrictive folder permissions.
 
-### IPv6 Support
+## IPv6 Support
 
 This is still a bit experimental as currently this script relies on your default VPC. If you haven't set your VPC to support IPv6, ideally you'll need to manually make the following changes first:
 
 - **VPC**: Add a new IPv6 CIDR (Amazon-provided)
 - **Subnets**
-  - **CIDR Range**: Edit IPv6 CIDRs for each subnet in the VPC. Each subnet should end in a unique incrementing number starting at 0 for the first, 1 for the second, etc. in any order. For example: `1234:5678:90a:bc00::/64`, `1234:5678:90a:bc01::/64`, `1234:5678:90a:bc02::/64`...
-  - **Assign IPv6**: Choose a single subnet, then Edit subnet settings. Turn on `Enable auto-assign IPv6 address`. You likely also want to change `Hostname type` from `IP name` to `Resource name`. Make these changes for each of your subnets in the VPC
-- **Route Tables**: Add a new route for `::/0` pointed to your Internet Gateway (same as the `0.0.0.0/0` entry)
+  - **CIDR Range**: Pick each subnet and edit its IPv6 CIDRs. Each should end in a unique incrementing number starting at 0 for the first, 1 for the second, etc. in any order. For example: `1234:5678:90a:bc00::/64`, `1234:5678:90a:bc01::/64`, `1234:5678:90a:bc02::/64`...
+  - **Assign IPv6**: Choose a single subnet, then Edit subnet settings. Turn on `Enable auto-assign IPv6 address`. You likely also want to change `Hostname type` from `IP name` to `Resource name`. Also make this change for each of your subnets in the VPC
+- **Route Tables**: Add a new route for `::/0`, pointed to your Internet Gateway (use the `0.0.0.0/0` entry for reference)
 
-If you've already deployed Foundry, edit the EC2 Security Group to add `::/0` for the HTTP, HTTPS, and custom IP ranges in the Inbound rules.
+### Domain AAAA Records
 
-IPv6 _only_ is certainly possible, still figuring that out as AWS will start charging for IPv4 addresses from January 2024.
+Next, we need to add an AAAA record to the hosted zone.
 
 Right now there's no (easy) way to get the IPv6 address of an EC2 instance in a CloudFormation script (see [this GitHub issue](https://github.com/aws-cloudformation/cloudformation-coverage-roadmap/issues/916) for the complete silence from Amazon). Thus there's no easy way to set the `AAAA` record using CloudFormation. Adding a whole Python lambda _just_ to get an IPv6 address, while impressive in execution, is a tremendous hack and not something I'd like to implement.
 
-If you enable IPv6, you'll also need to add the IPv6 `AAAA` records to your Route 53 zone manually for the time being.
+Once you enable IPv6, you'll also need to add the IPv6 `AAAA` records to your Route 53 zone/s for Foundry manually. Add a new AAAA record for eg. `foundry.mydomain.com` with the EC2's IPv6 address set.
+
+### Uplifting an Existing Deploy
+
+If you've already deployed Foundry, edit the EC2 Security Group to add `::/0` for the HTTP, HTTPS, and custom IP ranges in the Inbound rules. Then check the EC2's Network settings and auto-assign an IPv6 IP to it.
+
+### IPv6 Only
+
+IPv6 _only_ is certainly possible, still figuring that out as AWS will start charging for IPv4 addresses from January 2024.
 
 ## Debugging Failed CloudFormation
 
@@ -129,6 +138,10 @@ Hopefully that gives you some insight in what's going on...
 
 ### Fixes and Features
 
+- New: **Experimental** IPv6 support, work in progress
+- New: Send certbot's update logs to CloudWatch
+- New: Can choose to _not_ request LetsEncrypt TLS if you're trying to get it to deploy and you don't want to run into the certificate issuance limit. See https://letsencrypt.org/docs/duplicate-certificate-limit/
+- New: Amazon Linux 2023 kernel auto-updating
 - Fix: S3 bucket ACL permissions were updated for the stricter [default policy](https://aws.amazon.com/about-aws/whats-new/2022/12/amazon-s3-automatically-enable-block-public-access-disable-access-control-lists-buckets-april-2023/) as of circa April 2023
 - Fix: S3 permissions and configuration was changed in Foundry 11
 - Fix: New default AMI security seems to necessitate `sudo` in the install script
@@ -148,9 +161,6 @@ Hopefully that gives you some insight in what's going on...
 - Uplift: `t3a` instances are fine, but `t4g` instances are cheaper for very similar workloads so they're now the default
   - I found Foundry would _just_ run on a `.micro` instance, but it'd also run out of memory and cause the EC2 to freak out. This resulted in CPU usage (and hosting costs) to spiral out of control, so I removed that size
   - `m6`-class instances added for people who are made of moneybags, replacing the older `m4` instances
-- New: Send certbot's update logs to CloudWatch
-- New: Can choose to _not_ request LetsEncrypt TLS if you're trying to get it to deploy and you don't want to run into the certificate issuance limit. See https://letsencrypt.org/docs/duplicate-certificate-limit/
-- New: Amazon Linux 2023 kernel auto-updating
 
 ### Future Considerations
 
@@ -160,4 +170,4 @@ Hopefully that gives you some insight in what's going on...
 - Better ownership/permissions defaults?
 - Automatically select the `x86_64` or `arm64` image based on instance choice (even possible?)
 - Consider using SSH forwarding via SSM or EC2 Instance Connect instead of key pair stuff, would need to look into this
-- IPv6 support (AWS will soon start charging for IPv4 address assignments)
+- IPv6 support (AWS will soon start charging for IPv4 address assignments), in progress
