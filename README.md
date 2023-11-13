@@ -120,7 +120,7 @@ It may be that I end up removing the `A` and `AAAA` record settings in CloudForm
 
 ### Uplifting an Existing Deploy
 
-If you've already deployed Foundry, it's possible to uplift it to IPv6. After editing your subnet, also edit the EC2 Security Group's Incoming rules to add `::/0` for the HTTP, HTTPS, and custom IP ranges in the Inbound rules. Then check the EC2's Network settings and auto-assign an IPv6 address to it.
+If you've already deployed Foundry, it's possible to uplift it to IPv6. After editing your VPC, subnets and route table, you also need to edit the EC2 Security Group's Incoming rules to add `::/0` for the HTTP, HTTPS, and custom port ranges in the Inbound rules (_except_  for `30000`). Then check the EC2's Network settings and auto-assign an IPv6 address to it.
 
 ### IPv6 Only
 
