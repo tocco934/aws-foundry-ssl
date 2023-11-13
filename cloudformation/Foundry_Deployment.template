@@ -166,7 +166,7 @@
 		},
 		"SshAccessIP": {
 			"Type": "String",
-			"Description": "Will allow TCP port 22 (SSH) Inbound access for the given IP range. You MUST enter a CIDR range. For a single IP use /32. You likely want to use your public IP (https://www.whatsmyip.org/). eg: 123.45.67.89/32. If you leave this blank, you can set it manually later in the EC2 instance's Security Group.",
+			"Description": "Will allow TCP port 22 (SSH) Inbound access for the given IP range. If entering, you MUST specify a valid CIDR range. For a single IPv4 IP use /32. For IPv6 use /128. You likely want to use your public IP (https://www.whatsmyip.org/). eg: 123.45.67.89/32. If you leave this blank, you can always set it later in the EC2 instance's Security Group Inbound rules.",
 			"Default": "",
 			"ConstraintDescription": "Must be a valid IP/CIDR range."
 		},
@@ -304,7 +304,8 @@
 		"FoundryServerSG": {
 			"Type": "AWS::EC2::SecurityGroup",
 			"Properties": {
-				"GroupDescription": "-",
+				"GroupName": "Foundry VTT",
+				"GroupDescription": "Security rules for the FoundryVTT instance",
 				"SecurityGroupIngress": [
 					{
 						"IpProtocol": "tcp",
@@ -315,7 +316,7 @@
 				]
 			}
 		},
-		"SecurityGroupIngressVoice": {
+		"SecurityGroupIngressVoiceIPv4": {
 			"Type": "AWS::EC2::SecurityGroupIngress",
 			"Properties": {
 				"GroupId": {
@@ -330,7 +331,22 @@
 				"ToPort": 80
 			}
 		},
-		"SecurityGroupIngressVoiceRange": {
+		"SecurityGroupIngressVoiceIPv6": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Properties": {
+				"GroupId": {
+					"Fn::GetAtt": [
+						"FoundryServerSG",
+						"GroupId"
+					]
+				},
+				"CidrIp": "::/0",
+				"FromPort": 80,
+				"IpProtocol": "tcp",
+				"ToPort": 80
+			}
+		},
+		"SecurityGroupIngressVoiceRangeIPv4": {
 			"Type": "AWS::EC2::SecurityGroupIngress",
 			"Properties": {
 				"GroupId": {
@@ -345,7 +361,22 @@
 				"ToPort": 65535
 			}
 		},
-		"SecurityGroupIngressHTTP": {
+		"SecurityGroupIngressVoiceRangeIPv6": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Properties": {
+				"GroupId": {
+					"Fn::GetAtt": [
+						"FoundryServerSG",
+						"GroupId"
+					]
+				},
+				"CidrIp": "::/0",
+				"FromPort": 49152,
+				"IpProtocol": "tcp",
+				"ToPort": 65535
+			}
+		},
+		"SecurityGroupIngressHttpIPv4": {
 			"Type": "AWS::EC2::SecurityGroupIngress",
 			"Properties": {
 				"GroupId": {
@@ -360,7 +391,22 @@
 				"ToPort": 33478
 			}
 		},
-		"SecurityGroupIngressHTTPS": {
+		"SecurityGroupIngressHttpIPv6": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Properties": {
+				"GroupId": {
+					"Fn::GetAtt": [
+						"FoundryServerSG",
+						"GroupId"
+					]
+				},
+				"CidrIp": "::/0",
+				"FromPort": 33478,
+				"IpProtocol": "tcp",
+				"ToPort": 33478
+			}
+		},
+		"SecurityGroupIngressHttpsIPv4": {
 			"Type": "AWS::EC2::SecurityGroupIngress",
 			"Properties": {
 				"GroupId": {
@@ -370,6 +416,21 @@
 					]
 				},
 				"CidrIp": "0.0.0.0/0",
+				"FromPort": 443,
+				"IpProtocol": "tcp",
+				"ToPort": 443
+			}
+		},
+		"SecurityGroupIngressHttpsIPv6": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Properties": {
+				"GroupId": {
+					"Fn::GetAtt": [
+						"FoundryServerSG",
+						"GroupId"
+					]
+				},
+				"CidrIp": "::/0",
 				"FromPort": 443,
 				"IpProtocol": "tcp",
 				"ToPort": 443

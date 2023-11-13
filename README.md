@@ -31,6 +31,7 @@ It's not recommended to use the time-limited links that you can get from the Fou
 
 ### AWS Setup
 
+- This script currently relies on your `default` VPC, which should be set up automatically when you first create your acccount. If you have a custom VPC, you'll need to edit this script to use it
 - Create an SSH key in **EC2**, under `EC2 / Network & Security / Key Pairs`
   - You only need to do this once, _the first time_. If you tear down and redeploy the stack you can reuse the same SSH key
   - That said, consider rotating keys regularly as a good security practise
@@ -85,6 +86,24 @@ In the `/aws-foundry-ssl/utils` folder, you can run:
 `sudo sh ./restart_foundry.sh`
 
 If you get permissions errors, you may also need to run just the `./fix_folder_permissions.sh` script after adding your Foundry license, but _before_ you transfer files. By default Foundry creates more restrictive folder permissions.
+
+### IPv6 Support
+
+This is still a bit experimental as currently this script relies on your default VPC. If you haven't set your VPC to support IPv6, ideally you'll need to manually make the following changes first:
+
+- **VPC**: Add a new IPv6 CIDR (Amazon-provided)
+- **Subnets**
+  - **CIDR Range**: Edit IPv6 CIDRs for each subnet in the VPC. Each subnet should end in a unique incrementing number starting at 0 for the first, 1 for the second, etc. in any order. For example: `1234:5678:90a:bc00::/64`, `1234:5678:90a:bc01::/64`, `1234:5678:90a:bc02::/64`...
+  - **Assign IPv6**: Choose a single subnet, then Edit subnet settings. Turn on `Enable auto-assign IPv6 address`. You likely also want to change `Hostname type` from `IP name` to `Resource name`. Make these changes for each of your subnets in the VPC
+- **Route Tables**: Add a new route for `::/0` pointed to your Internet Gateway (same as the `0.0.0.0/0` entry)
+
+If you've already deployed Foundry, edit the EC2 Security Group to add `::/0` for the HTTP, HTTPS, and custom IP ranges in the Inbound rules.
+
+IPv6 _only_ is certainly possible, still figuring that out as AWS will start charging for IPv4 addresses from January 2024.
+
+Right now there's no (easy) way to get the IPv6 address of an EC2 instance in a CloudFormation script (see [this GitHub issue](https://github.com/aws-cloudformation/cloudformation-coverage-roadmap/issues/916) for the complete silence from Amazon). Thus there's no easy way to set the `AAAA` record using CloudFormation. Adding a whole Python lambda _just_ to get an IPv6 address, while impressive in execution, is a tremendous hack and not something I'd like to implement.
+
+If you enable IPv6, you'll also need to add the IPv6 `AAAA` records to your Route 53 zone manually for the time being.
 
 ## Debugging Failed CloudFormation
 

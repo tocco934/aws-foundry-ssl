@@ -17,8 +17,8 @@ if [[ `echo ${foundry_download_link} | cut -d '/' -f3` == 'drive.google.com' ]];
 
     file_id=`echo ${foundry_download_link} | cut -d '/' -f6`
 
-    while (( FS_Retry < 4 )); do
-        echo "Attempt ${FS_RETRY}..."
+    while (( fs_retry < 4 )); do
+        echo "Attempt $fs_retry..."
 
         sudo wget --quiet --save-cookies cookies.txt --keep-session-cookies --no-check-certificate "https://docs.google.com/uc?export=download&id=${file_id}" -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p' > confirm.txt
 
@@ -34,15 +34,15 @@ if [[ `echo ${foundry_download_link} | cut -d '/' -f3` == 'drive.google.com' ]];
             break
         else
             echo "File size looking too small. Retrying..."
-            (( FS_Retry++ ))
+            (( fs_retry++ ))
         fi
     done
 else
     # Foundry Patreon or other hosted link
     echo ">>> Downloading Foundry from a Patreon or custom link"
 
-    while (( FS_Retry < 4 )); do
-        echo "Attempt ${FS_RETRY}..."
+    while (( fs_retry < 4 )); do
+        echo "Attempt $fs_retry..."
 
         sudo wget -O foundry.zip "${foundry_download_link}"
 
@@ -56,7 +56,7 @@ else
             break
         else
             echo "File size looking too small. Retrying..."
-            (( FS_Retry++ ))
+            (( fs_retry++ ))
         fi
     done
 fi
