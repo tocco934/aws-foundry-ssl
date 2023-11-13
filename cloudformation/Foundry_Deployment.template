@@ -389,7 +389,7 @@
 				"ToPort": 22
 			}
 		},
-		"Route53RSFoundry": {
+		"Route53RSFoundryIPv4": {
 			"Type": "AWS::Route53::RecordSet",
 			"Condition": "ConfigureRoute53",
 			"Properties": {
@@ -411,7 +411,7 @@
 				"TTL": "60"
 			}
 		},
-		"Route53RSWeb": {
+		"Route53RSWebIPv4": {
 			"Type": "AWS::Route53::RecordSet",
 			"Condition": "Route53WebServer",
 			"Properties": {

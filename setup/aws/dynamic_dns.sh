@@ -2,6 +2,8 @@
 source /foundryssl/variables.sh
 
 # NOTE: This script doesn't take into account if the hosting is behind CloudFront (*.cloudfront.net)
+# @TODO: Make this stuff work for IPv6 AAAA (though how often will an IPv6 address change? :shrug:)
+# @TODO: Investigate the timer setup as to whether it's triggering when an instance is restarted
 
 # Retrieve public IP
 public_ip="$(dig +short myip.opendns.com @resolver1.opendns.com)"
