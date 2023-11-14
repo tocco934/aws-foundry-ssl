@@ -38,4 +38,11 @@ else
     if [[ ${webserver_bool} == 'True' ]]; then
         certbot --agree-tos -n --nginx -d ${fqdn},www.${fqdn} -m ${email} --no-eff-email
     fi
+
+    # Force a hacky upgrade to http2 for SSL only
+    # I'm assuming this won't be reset by certbot, but if it does will need to add it above
+    sudo sed -i 's/:443 ssl ipv6only=on;/:443 ssl http2 ipv6only=on;/g' /etc/nginx/conf.d/foundryvtt.conf
+    sudo sed -i 's/443 ssl;/443 ssl http2;/g' /etc/nginx/conf.d/foundryvtt.conf
+
+    systemctl restart nginx
 fi
