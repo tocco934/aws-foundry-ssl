@@ -10,7 +10,7 @@ This is a fork of the [**Foundry CF deploy script**](https://github.com/cat-box/
 - Newer more cost efficient / performant instance type support, including ARM64
 - Experimental IPv6 support
 
-Note this is just something being done in my spare time and for fun/interest. Keep that in mind.
+Note this is just something being done in my spare time and for fun/interest. Please keep that in mind.
 
 ## Installation
 
@@ -98,9 +98,9 @@ If you get permissions errors, you may also need to run just the `./fix_folder_p
 
 ## IPv6 Support
 
-This is still experimental as currently this script relies on your default VPC. The goal is that IPv6 uses http/2 and TLS (https) _only_, with insecure non-TLS (http) being only available over IPv4 for debugging. TLS (https) over IPv4 remains supported, of course.
+This is still experimental as currently this script relies on your default VPC. It works at the moment, and http/2 is being investigated as a bit of a hack once LetsEncrypt sets up the config, but for TLS connections only (non-encrypted HTTP and upgrade redirects do not use http/2).
 
-If you haven't configured your VPC to support IPv6, you'll need to manually make the following changes:
+If you want to use IPv6 but haven't configured your VPC to support it, you'll need to manually make the following changes for now:
 
 - **VPC**: Add a new IPv6 CIDR (Amazon-provided)
 - **Subnets**
@@ -118,13 +118,15 @@ Right now there's no (easy) way to get the IPv6 address of an EC2 instance in a 
 
 It may be that I end up removing the `A` and `AAAA` record settings in CloudFormation and rely on the upsert behaviour from the `systemd` timer's script to do it for us.
 
+In case your instance does change its IPv6 address, you'll currently manually need to update the `AAAA` record as well.
+
 ### Uplifting an Existing Deploy
 
 If you've already deployed Foundry, it's possible to uplift it to IPv6. After editing your VPC, subnets and route table, you also need to edit the EC2 Security Group's Incoming rules to add `::/0` for the HTTP, HTTPS, and custom port ranges in the Inbound rules (_except_  for `30000`). Then check the EC2's Network settings and auto-assign an IPv6 address to it.
 
 ### IPv6 Only
 
-IPv6 _only_ is certainly possible, still figuring that out as AWS will start charging for IPv4 addresses from January 2024.
+IPv6 _only_ is certainly possible, still figuring that out as AWS will start charging for IPv4 addresses from February 2024. Likely need to add VPC selection to the CloudFormation script to make that possible.
 
 ## Debugging Failed CloudFormation
 
