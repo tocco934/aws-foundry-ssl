@@ -64,7 +64,7 @@ If need be, set the LetsEncrypt TLS testing option to `False` in the CloudFormat
 
 ## Security and Updates
 
-As of the `v1.1.0` release, Linux auto-patching is enabled by default. A utility script also exists to help you manage this if you want to disable or re-enable or run it.
+As of the `v1.1.0` release, Linux auto-patching is enabled by default. A utility script `utils/kernel_updates.sh` also exists to help you manage this if you want to disable or re-enable or run it.
 
 It's also recommended to SSH into the instance and run `sudo dnf upgrade` every so often to make sure your packages are up to date with the latest fixes and security releases.
 
@@ -123,6 +123,8 @@ In case your instance does change its IPv6 address, you'll currently manually ne
 ### Uplifting an Existing Deploy
 
 If you've already deployed Foundry, it's possible to uplift it to IPv6. After editing your VPC, subnets and route table, you also need to edit the EC2 Security Group's Incoming rules to add `::/0` for the HTTP, HTTPS, and custom port ranges in the Inbound rules (_except_  for `30000`). Then check the EC2's Network settings and auto-assign an IPv6 address to it.
+
+Once AWS is configured, you'll need to edit the nginx configuration to listen to `[::]:80` and `[::]:443` traffic, which is a pass-through for IPv6 addresses. Check the base configuration file in this repository for reference.
 
 ### IPv6 Only
 
