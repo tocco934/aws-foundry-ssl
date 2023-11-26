@@ -43,7 +43,8 @@
 						"InstanceType",
 						"AMI",
 						"UseFixedIP",
-						"SshAccessIP"
+						"SshAccessIPv4",
+						"SshAccessIPv6"
 					]
 				},
 				{
@@ -164,11 +165,17 @@
 			],
 			"Default": "False"
 		},
-		"SshAccessIP": {
+		"SshAccessIPv4": {
 			"Type": "String",
-			"Description": "Will allow TCP port 22 (SSH) Inbound access for the given IP range. If entering, you MUST specify a valid CIDR range. For a single IPv4 IP use /32. For IPv6 use /128. You likely want to use your public IP (https://www.whatsmyip.org/). eg: 123.45.67.89/32. If you leave this blank, you can always set it later in the EC2 instance's Security Group Inbound rules.",
+			"Description": "Will allow TCP port 22 (SSH) Inbound access for the given IPv4 range. If entering, you MUST specify a valid CIDR range. For a single IPv4 IP use /32. You likely want to use your public IP (https://www.whatsmyip.org/). eg: 123.45.67.89/32. If you leave this blank, you can always set it later in the EC2 instance's Security Group Inbound rules.",
 			"Default": "",
-			"ConstraintDescription": "Must be a valid IP/CIDR range."
+			"ConstraintDescription": "Must be a valid IPv4/CIDR range."
+		},
+		"SshAccessIPv6": {
+			"Type": "String",
+			"Description": "Will allow TCP port 22 (SSH) Inbound access for the given IPv6 range. If entering, you MUST specify a valid CIDR range. For a single IPv6 IP use /128. You likely want to use your public IP (https://www.whatsmyip.org/). eg: 1234::5678/128. If you leave this blank, you can always set it later in the EC2 instance's Security Group Inbound rules.",
+			"Default": "",
+			"ConstraintDescription": "Must be a valid IPv6/CIDR range."
 		},
 		"UseExistingS3Bucket": {
 			"Type": "String",
@@ -213,13 +220,25 @@
 				"True"
 			]
 		},
-		"HasSshIP": {
+		"HasSshIPv4": {
 			"Fn::Not": [
 				{
 					"Fn::Equals": [
 						"",
 						{
-							"Ref": "SshAccessIP"
+							"Ref": "SshAccessIPv4"
+						}
+					]
+				}
+			]
+		},
+		"HasSshIPv6": {
+			"Fn::Not": [
+				{
+					"Fn::Equals": [
+						"",
+						{
+							"Ref": "SshAccessIPv6"
 						}
 					]
 				}
@@ -340,7 +359,7 @@
 						"GroupId"
 					]
 				},
-				"CidrIp": "::/0",
+				"CidrIpv6": "::/0",
 				"FromPort": 80,
 				"IpProtocol": "tcp",
 				"ToPort": 80
@@ -370,7 +389,7 @@
 						"GroupId"
 					]
 				},
-				"CidrIp": "::/0",
+				"CidrIpv6": "::/0",
 				"FromPort": 49152,
 				"IpProtocol": "tcp",
 				"ToPort": 65535
@@ -400,7 +419,7 @@
 						"GroupId"
 					]
 				},
-				"CidrIp": "::/0",
+				"CidrIpv6": "::/0",
 				"FromPort": 33478,
 				"IpProtocol": "tcp",
 				"ToPort": 33478
@@ -430,15 +449,15 @@
 						"GroupId"
 					]
 				},
-				"CidrIp": "::/0",
+				"CidrIpv6": "::/0",
 				"FromPort": 443,
 				"IpProtocol": "tcp",
 				"ToPort": 443
 			}
 		},
-		"SecurityGroupIngressSSH": {
+		"SecurityGroupIngressSshIPv4": {
 			"Type": "AWS::EC2::SecurityGroupIngress",
-			"Condition": "HasSshIP",
+			"Condition": "HasSshIPv4",
 			"Properties": {
 				"GroupId": {
 					"Fn::GetAtt": [
@@ -447,7 +466,25 @@
 					]
 				},
 				"CidrIp": {
-					"Ref": "SshAccessIP"
+					"Ref": "SshAccessIPv4"
+				},
+				"FromPort": 22,
+				"IpProtocol": "tcp",
+				"ToPort": 22
+			}
+		},
+		"SecurityGroupIngressSshIPv6": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Condition": "HasSshIPv6",
+			"Properties": {
+				"GroupId": {
+					"Fn::GetAtt": [
+						"FoundryServerSG",
+						"GroupId"
+					]
+				},
+				"CidrIpv6": {
+					"Ref": "SshAccessIPv6"
 				},
 				"FromPort": 22,
 				"IpProtocol": "tcp",
