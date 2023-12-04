@@ -2,9 +2,9 @@
 Description=Poll to set dynamic DNS in case it changes
 
 [Timer]
-OnBootSec=15s
-OnUnitActiveSec=12h
-Persistent=true
+Unit=hosted_zone_ip.service
+OnBootSec=0s
+OnUnitActiveSec=24h
 
 [Install]
 WantedBy=timers.target

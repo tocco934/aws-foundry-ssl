@@ -4,6 +4,9 @@
 # LetsEncrypt TLS (https) Certbot setup and auto-renewal
 # ------------------------------------------------------
 
+# Without CF setting the IP (as may be the case if IPv6 only) it can sometimes
+# be that the DNS isn't set quickly enough. Probs need to protect against that.
+
 source /foundryssl/variables.sh
 
 # Install augeas

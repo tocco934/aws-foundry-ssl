@@ -26,7 +26,7 @@ source /aws-foundry-ssl/setup/nginx.sh
 # Amazon Cloudwatch logs, zone updates and kernel patching
 echo "===== 4. INSTALLING AWS SERVICES AND LINUX KERNEL PATCHING ====="
 source /aws-foundry-ssl/setup/aws_cloudwatch_config.sh
-source /aws-foundry-ssl/setup/aws_hosted_zone_id.sh
+source /aws-foundry-ssl/setup/aws_hosted_zone_ip.sh
 source /aws-foundry-ssl/setup/aws_linux_updates.sh
 
 # Set up TLS certificates with LetsEncrypt

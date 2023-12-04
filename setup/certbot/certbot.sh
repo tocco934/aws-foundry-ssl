@@ -1,7 +1,7 @@
 #!/bin/bash
 source /foundryssl/variables.sh
 
-echo $PATH > /var/log/foundrycron/path.log 2>&1
+echo $PATH > /var/log/foundrycron/certbot_renew.log 2>&1
 
 if [[ "${enable_letsencrypt}" == "False" ]]; then
     echo "LetsEncrypt is disabled - check /foundryssl/variables.sh; exiting..."
@@ -27,7 +27,8 @@ if [[ -d "/etc/letsencrypt/live/${subdomain}.${fqdn}" ]]; then
     echo "Checking TLS certificate for renewal..."
 
     # Certificate exists, we can check if it needs renewal
-    certbot renew --nginx --no-random-sleep-on-renew --post-hook "systemctl restart nginx"
+    certbot renew --nginx --no-random-sleep-on-renew
+    # --post-hook "systemctl restart nginx"
 else
     echo "TLS certificate not found, attempting to set it up..."
 
@@ -38,11 +39,13 @@ else
     if [[ ${webserver_bool} == 'True' ]]; then
         certbot --agree-tos -n --nginx -d ${fqdn},www.${fqdn} -m ${email} --no-eff-email
     fi
-
-    # Force a hacky upgrade to http2 for SSL only
-    # I'm assuming this won't be reset by certbot, but if it does will need to add it above
-    sudo sed -i 's/:443 ssl ipv6only=on;/:443 ssl http2 ipv6only=on;/g' /etc/nginx/conf.d/foundryvtt.conf
-    sudo sed -i 's/443 ssl;/443 ssl http2;/g' /etc/nginx/conf.d/foundryvtt.conf
-
-    systemctl restart nginx
 fi
+
+# Force a hacky upgrade to http2 for SSL only
+# I'm assuming this won't be reset by certbot, but just in case...
+# This can likely be negated once nginx 1.25.x+ is available for Amazon Linux
+# 2023 as it has a separate http2 option instead of under `listen`
+sudo sed -i 's/:443 ssl ipv6only=on;/:443 ssl http2 ipv6only=on;/g' /etc/nginx/conf.d/foundryvtt.conf
+sudo sed -i 's/443 ssl;/443 ssl http2;/g' /etc/nginx/conf.d/foundryvtt.conf
+
+systemctl restart nginx

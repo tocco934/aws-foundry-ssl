@@ -491,50 +491,6 @@
 				"ToPort": 22
 			}
 		},
-		"Route53RSFoundryIPv4": {
-			"Type": "AWS::Route53::RecordSet",
-			"Condition": "ConfigureRoute53",
-			"Properties": {
-				"Name": {
-					"Fn::Sub": "${SubdomainName}.${FullyQualifiedDomainName}"
-				},
-				"Type": "A",
-				"HostedZoneName": {
-					"Fn::Sub": "${FullyQualifiedDomainName}."
-				},
-				"ResourceRecords": [
-					{
-						"Fn::GetAtt": [
-							"FoundryServer",
-							"PublicIp"
-						]
-					}
-				],
-				"TTL": "60"
-			}
-		},
-		"Route53RSWebIPv4": {
-			"Type": "AWS::Route53::RecordSet",
-			"Condition": "Route53WebServer",
-			"Properties": {
-				"Name": {
-					"Ref": "FullyQualifiedDomainName"
-				},
-				"Type": "A",
-				"HostedZoneName": {
-					"Fn::Sub": "${FullyQualifiedDomainName}."
-				},
-				"ResourceRecords": [
-					{
-						"Fn::GetAtt": [
-							"FoundryServer",
-							"PublicIp"
-						]
-					}
-				],
-				"TTL": "60"
-			}
-		},
 		"Route53RSWebWWW": {
 			"Type": "AWS::Route53::RecordSet",
 			"Condition": "Route53WebServer",
@@ -551,7 +507,7 @@
 						"Ref": "FullyQualifiedDomainName"
 					}
 				],
-				"TTL": "60"
+				"TTL": "120"
 			}
 		},
 		"FoundryBucket": {

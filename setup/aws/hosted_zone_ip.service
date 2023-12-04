@@ -2,4 +2,5 @@
 Description=Set dynamic DNS in case it changes
 
 [Service]
-ExecStart=sudo bash /foundrycron/dynamic_dns.sh
+Type=oneshot
+ExecStart=sudo bash /foundrycron/hosted_zone_ip.sh
