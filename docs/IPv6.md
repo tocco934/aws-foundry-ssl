@@ -10,7 +10,7 @@ If you want to use IPv6 but haven't configured your VPC to support it, you'll ne
   - **Assign IPv6**: Choose a single subnet, then Edit subnet settings. Turn on `Enable auto-assign IPv6 address`. You likely also want to change `Hostname type` from `IP name` to `Resource name`. Also make this change for each of your subnets in the VPC
 - **Route Tables**: Add a new route for `::/0`, pointed to your Internet Gateway (use the `0.0.0.0/0` entry as a reference)
 
-Then deploy Foundry using this script. It should be assigned both an IPv4 and IPv6 address. However, the IPv6 address won't be routed until you manually configure its `AAAA` DNS record.
+Then deploy Foundry using this script. It should be assigned both an IPv4 and IPv6 address. Route53 via the AWS CLI is called by a `systemd` timer to add both the `A` and/or `AAAA` routing entries shortly after the server boots up.
 
 ### Uplifting an Existing Deploy
 
