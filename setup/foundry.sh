@@ -4,7 +4,7 @@
 # Download and install FoundryVTT
 # -------------------------------
 
-sudo mkdir -p /foundrycron /var/log/foundrycron /home/foundry/foundry-install /foundrydata /foundrydata/Data
+sudo mkdir -p /foundrycron /var/log/foundrycron /home/foundry/foundry-install /foundrydata /foundrydata/Data /foundrydata/Config
 
 # Download Foundry from Patreon link or Google Drive
 cd /home/foundry/foundry-install
@@ -71,7 +71,7 @@ unzip -u foundry.zip
 rm -f foundry.zip
 
 # Allow rwx in the Data folder only for ec2-user:foundry
-sudo chown -R foundry:foundry /home/foundry /foundrydata
+sudo chown -R foundry:foundry /home/foundry /foundrydata /foundrydata/Config
 sudo find /foundrydata -type d -exec chmod 775 {} +
 sudo find /foundrydata -type f -exec chmod 664 {} +
 
@@ -86,7 +86,7 @@ sudo systemctl enable --now foundry
 F_DIR='/foundrydata/Config/'
 echo "Start time: $(date +%s)"
 
-while (( Edit_Retry < 45 )); do
+while (( edit_retry < 45 )); do
     if [[ -d $F_DIR ]]; then
         echo "Directory found time: $(date +%s)"
         sudo cp /aws-foundry-ssl/setup/foundry/options.json /foundrydata/Config/options.json
@@ -99,7 +99,7 @@ while (( Edit_Retry < 45 )); do
         break
     else
         echo  echo "Directory not found time: $(date +%s)"
-        (( Edit_Retry++ ))
+        (( edit_retry++ ))
         sleep 1s
     fi
 done
