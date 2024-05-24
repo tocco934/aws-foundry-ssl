@@ -731,7 +731,7 @@
 								"command": "sudo dnf install -y git"
 							},
 							"B_Clone_Repo": {
-								"command": "sudo git clone --branch fix-1 https://github.com/tocco934/aws-foundry-ssl.git",
+								"command": "sudo git clone https://github.com/tocco934/aws-foundry-ssl.git",
 								"cwd": "/"
 							},
 							"C_Start_Install": {
