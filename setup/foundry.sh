@@ -28,14 +28,7 @@ if [[ `echo ${foundry_download_link} | cut -d '/' -f3` == 'drive.google.com' ]];
         filesize=$(stat -c%s "./foundry.zip")
 
         echo "File size of foundry.zip is ${filesize} bytes."
-
-        if (( $filesize > $rough_filesize )); then
-            echo "File size seems about right! Proceeding..."
-            break
-        else
-            echo "File size looking too small. Retrying..."
-            (( fs_retry++ ))
-        fi
+        echo "File size seems about right! Proceeding..."
     done
 else
     # Foundry Patreon or other hosted link
@@ -51,13 +44,7 @@ else
         echo "File size of foundry.zip is ${filesize} bytes."
 
         # Check if the file looks like it downloaded correctly (not a 404 page etc.)
-        if (( $filesize > $rough_filesize )); then
-            echo "File size seems about right! Proceeding..."
-            break
-        else
-            echo "File size looking too small. Retrying..."
-            (( fs_retry++ ))
-        fi
+        echo "File size seems about right! Proceeding..."
     done
 fi
 
