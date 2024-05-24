@@ -61,12 +61,6 @@ else
     done
 fi
 
-# Final valid size check
-if (( $filesize > $rough_filesize )); then
-    echo "Error: Downloaded foundry.zip doesn't seem big enough. Check the zip file and URL were correct."
-    exit 1
-fi
-
 unzip -u foundry.zip
 rm -f foundry.zip
 
